@@ -1,10 +1,10 @@
 :root {
-    --bg: #f3f4f8;
-    --sf: #fff;
-    --sf2: #f8f9fc;
+    --bg: #dfe4ee;
+    --sf: #eef1f7;
+    --sf2: #e1e6f0;
     --tx: #0b101a;
     --mt: #364055;
-    --ln: #cdd3e0;
+    --ln: #b4bdd0;
     --p0: #c4202e;
     --p1: #b85a00;
     --p2: #1b66d1;
@@ -12,6 +12,9 @@
     --g2: #5f33b0;
     --g3: #3f4b5e;
     --site: #fcebb0;
+    --hnbg: #d3dcec;
+    --hnbd: #2f4f7f;
+    --hntx: #14284b;
     --sitetx: #5a4300;
     --ok: #14925f;
     box-sizing: border-box;
@@ -34,6 +37,9 @@
         --g2: #a98bff;
         --g3: #9aa6bb;
         --site: #4a3d10;
+        --hnbg: #22304a;
+        --hnbd: #5a7fb8;
+        --hntx: #e3ebf8;
         --sitetx: #ffe08a
     }
 }
@@ -52,6 +58,9 @@
     --g2: #a98bff;
     --g3: #9aa6bb;
     --site: #4a3d10;
+    --hnbg: #22304a;
+    --hnbd: #5a7fb8;
+    --hntx: #e3ebf8;
     --sitetx: #ffe08a
 }
 
@@ -278,6 +287,11 @@ td:first-child {
     text-overflow: ellipsis
 }
 
+td.gest {
+    color: var(--tx);
+    font-weight: 700
+}
+
 .hn {
     width: 150px;
     font: inherit;
@@ -391,4 +405,12 @@ dialog input {
     border-radius: 8px;
     background: var(--bg);
     color: var(--tx)
+}
+
+/* campo Hostname em azul corporativo */
+.hn {
+    background: var(--hnbg);
+    border: 1px solid var(--hnbd);
+    color: var(--hntx);
+    font-weight: 700
 }

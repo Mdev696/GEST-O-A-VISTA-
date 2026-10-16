@@ -27,8 +27,23 @@ let rows = [
     D(369514414, 0, 'P2', '<=24h', 'PI', 'SERRA', 'TEL_O&M-RJ/ES(Terceiro)', 'ES', 'MAS', 5.85),
     D(369521811, 0, 'P2', '<=24h', 'PI', 'SERRA', 'TEL_O&M-RJ/ES(Terceiro)', 'ES', 'PFR', 3.23)
 ];
-let afet = { 'i-br-rj-rjo-msj-hl4-01': 7210 };   // exemplo; a real vem da aba AFETAÇÃO
-if (!store.get('hn:369512139')) store.set('hn:369512139', 'I-BR-RJ-RJO-MSJ-HL4-01');
+// ---- afetação (base HL4, soma de clientes por hostname) e hostname automático ----
+let afet = {};    // HL4  (P0 e P2) - tabela afetacao_hl4 do Supabase
+let afet5 = {};   // HL5D (P1)      - tabela afetacao_hl5d do Supabase
+let sbAlarme = {};   // alarmes dos P1 vindos do Supabase (casos_backup)
+const HRX = /i-br-[a-z]{2}-[a-z0-9]{3}-[a-z0-9]{3}-hl\d[a-z]?-\d+/gi;
+// Preencha aqui se quiser deixar a conexão fixa no código (ou use o botão Supabase na tela)
+const SUPABASE_URL = '';   // ex.: https://xxxx.supabase.co
+const SUPABASE_KEY = '';   // chave anon public
+const sbCfg = () => ({ url: (store.get('sb_url') || SUPABASE_URL).replace(/\/+$/, ''), key: store.get('sb_key') || SUPABASE_KEY });
+const alarmOf = r => (r.pri === 'P1' && sbAlarme[r.seq]) || r.alarme || '';
+let siteIdx = {};   // SITE (e último trecho do hostname) -> hostnames HL5D
+const bySite = r => { const uf = 'i-br-' + norm(r.uf) + '-', sl = norm(r.sloc), l = (siteIdx[norm(r.site)] || []).filter(h => h.startsWith(uf)); return (sl && l.find(h => h.startsWith(uf + sl + '-'))) || l[0] || '' };
+const autoHost = r => {
+    const c = [...new Set((String(alarmOf(r)).match(HRX) || []).map(norm))];
+    if (r.pri === 'P1') { const h5 = c.filter(h => /-hl5d?-/.test(h)); return h5.find(h => h in afet5) || bySite(r) || h5[0] || '' }   // P1 = HL5D
+    return c.find(h => h in afet) || c.find(h => /-hl4-/.test(h)) || '';
+};
 
 // ---- regras (iguais às da planilha) ----
 const PO = { P0: 0, P1: 1, P2: 2 };
@@ -37,8 +52,8 @@ const GREEN = ['RE', 'SWAP', 'CIRE'], PURP = ['CENTRALIZADO', 'OUTRO', 'PI', 'MO
 const gcol = g => GREEN.includes(g) ? 'var(--g1)' : (PURP.includes(g) || g === '') ? 'var(--g2)' : 'var(--g3)';
 function status(ms) { const h = ms / H; return h >= 72 ? '>72HS' : h >= 48 ? '>48HS' : h >= 36 ? '>36HS' : h >= 24 ? '>24HS' : h >= 8 ? '>8HS' : '<8HS' }
 function fmt(ms) { const m = Math.max(0, Math.floor(ms / 6e4)); const d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60; return d + 'd ' + h + ':' + String(mm).padStart(2, '0') }
-const hostOf = r => store.get('hn:' + r.seq) || '';
-const riskOf = r => { const v = afet[norm(hostOf(r))]; return v == null ? 0 : v };
+const hostOf = r => store.get('hn:' + r.seq) || autoHost(r);
+const riskOf = r => { const h = norm(hostOf(r)), p = r.pri === 'P1' ? afet5 : afet, o = r.pri === 'P1' ? afet : afet5; return !h ? null : h in p ? p[h] : h in o ? o[h] : null };
 
 // ---- estado de filtros ----
 let fp = '', fq = '', fuf = '', fgr = '';
@@ -83,7 +98,7 @@ function render() {
 <td><span class="t${late ? ' late' : ''}" data-ts="${+r.criacao}">${fmt(ms)}</span></td>
 <td class="muted">${status(ms)}</td>
 <td><input class="hn" data-seq="${r.seq}" value="${esc(hostOf(r))}" placeholder="I-BR-UF-..." aria-label="Hostname do ticket ${r.seq}"></td>
-<td class="risk${rk ? ' on' : ''}">${rk.toLocaleString('pt-BR')}</td></tr>`
+<td class="risk${rk ? ' on' : ''}">${!hostOf(r) ? '—' : rk == null ? '<span class="muted">' + (Object.keys(afet).length + Object.keys(afet5).length ? 'sem registro' : 'sem base') + '</span>' : rk.toLocaleString('pt-BR')}</td></tr>`
     }).join('');
     $('#tb').querySelectorAll('.hn').forEach(i => i.onchange = () => { store.set('hn:' + i.dataset.seq, i.value.trim()); render() });
 }
@@ -103,11 +118,59 @@ $('#clear').onclick = () => {
     const b = $('#clear');
     if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = 'Confirmar limpeza?'; armT = setTimeout(() => { b.classList.remove('arm'); b.textContent = 'Limpar tabela' }, 3500); return }
     clearTimeout(armT); b.classList.remove('arm'); b.textContent = 'Limpar tabela';
-    rows = []; afet = {}; fp = fq = fuf = fgr = ''; $('#q').value = ''; $('#uf').value = ''; $('#gr').value = '';
+    rows = []; sbAlarme = {}; fp = fq = fuf = fgr = ''; $('#q').value = ''; $('#uf').value = ''; $('#gr').value = '';
     $('#meta').textContent = 'Tabela vazia · importe uma nova planilha (.xlsx)'; render()
 };
 
 // ---- importação do .xlsx (abas BACKLOG ATUAL e AFETAÇÃO) ----
+// ---- Supabase: alarme dos P1 na tabela casos_backup (para achar o hostname) ----
+async function sbLoad() {
+    const { url, key } = sbCfg(), info = { set textContent(v) { setInfo('p1', v) } };
+    const seqs = rows.filter(r => r.pri === 'P1').map(r => r.seq);
+    if (!url || !key || !seqs.length) return;
+    try {
+        info.textContent = 'Supabase: buscando os P1…';
+        for (let i = 0; i < seqs.length; i += 100) {
+            const res = await fetch(`${url}/rest/v1/casos_backup?select=sequencia,alarme&sequencia=in.(${seqs.slice(i, i + 100).join(',')})`, { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            (await res.json()).forEach(x => { sbAlarme[x.sequencia] = x.alarme || '' });
+        }
+        info.textContent = 'Supabase: ' + seqs.filter(s => sbAlarme[s]).length + ' de ' + seqs.length + ' P1 encontrados em casos_backup';
+        render();
+    } catch (err) { info.textContent = 'Supabase: não consegui buscar (' + err.message + ')' }
+}
+$('#sbbtn').onclick = () => { const c = sbCfg(); $('#sburl').value = c.url; $('#sbkey').value = c.key; $('#cfg').showModal() };
+$('#sbclose').onclick = () => $('#cfg').close();
+$('#sbsave').onclick = () => { store.set('sb_url', $('#sburl').value.trim()); store.set('sb_key', $('#sbkey').value.trim()); $('#cfg').close(); sbAfet(); sbLoad() };
+
+// ---- Supabase: base de afetação (tabela afetacao_hl4, soma de clientes por hostname) ----
+const st = {}; const setInfo = (k, v) => { st[k] = v; $('#info').textContent = Object.values(st).filter(Boolean).join(' · ') };
+async function sbTable(url, key, path) {
+    const out = [];
+    for (let o = 0; ; o += 1000) {
+        const res = await fetch(`${url}/rest/v1/${path}&limit=1000&offset=${o}`, { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+        if (!res.ok) throw new Error(path.split('?')[0] + ' HTTP ' + res.status);
+        const p = await res.json(); out.push(...p); if (p.length < 1000) break;
+    }
+    return out;
+}
+async function sbAfet() {
+    const { url, key } = sbCfg(); if (!url || !key) return;
+    const m = {}, m5 = {}, ix = {}; let erro = '';
+    setInfo('afet', 'Supabase: carregando a afetação…');
+    try { (await sbTable(url, key, 'afetacao_hl4?select=hostname,clientes&order=id')).forEach(x => { const h = norm(x.hostname); if (h) m[h] = (m[h] || 0) + (Number(x.clientes) || 0) }); }
+    catch (err) { erro += ' · ' + err.message }
+    try {
+        (await sbTable(url, key, 'afetacao_hl5d?select=hostname,site,afetacao&order=id')).forEach(x => {
+            const h = norm(x.hostname); if (!h) return; m5[h] = (m5[h] || 0) + (Number(x.afetacao) || 0);
+            [norm(x.site), (h.match(/-([a-z0-9]{3})-hl5d?-/) || [])[1]].filter(Boolean).forEach(s => { (ix[s] = ix[s] || []); if (!ix[s].includes(h)) ix[s].push(h) })
+        })
+    }
+    catch (err) { erro += ' · ' + err.message }
+    afet = m; afet5 = m5; siteIdx = ix;
+    setInfo('afet', 'Afetação: ' + Object.keys(m).length + ' HL4 + ' + Object.keys(m5).length + ' HL5D (Supabase)' + (erro ? ' · erro' + erro : '')); render();
+}
+
 // leitor de .xlsx independente (para arquivos exportados por sistemas que o SheetJS não lê direito)
 async function rawRead(buf) {
     const u8 = new Uint8Array(buf), dv = new DataView(buf), td = new TextDecoder();
@@ -176,7 +239,7 @@ $('#file').onchange = async e => {
         const num = v => { if (typeof v === 'number') return v > 0 ? Math.floor(v) : 0; const s = String(v).trim(); return /^\d+$/.test(s) ? Number(s) : 0 };
         const toDate = v => { if (v instanceof Date) return v; if (typeof v === 'number') return new Date(Math.round((v - 25569) * 864e5)); const m = String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/); if (m) return new Date(+(m[3].length == 2 ? '20' + m[3] : m[3]), m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)); return new Date(v) };
         // só entra linha com Sequência numérica e data de criação válida (ignora "Total", "Filtros aplicados" e linhas vazias)
-        const build = js => js.map(o => ({ seq: num(pick(o, 'Sequencia', 'Sequência', 'Ticket', 'Nº Ticket', 'Numero')), raiz: num(pick(o, 'SequenciaRaiz', 'Sequência Raiz', 'Raiz')), pri: String(pick(o, 'Prioridade')).trim().toUpperCase(), aging: pick(o, 'Aging'), grupo: pick(o, 'Grupo Responsável', 'Grupo'), loc: pick(o, 'Localidade'), gestor: pick(o, 'Gestor Atual', 'Gestor'), uf: pick(o, 'UF'), site: pick(o, 'Sigla Site', 'Site'), criacao: toDate(pick(o, 'DataCriacao', 'Data Criação', 'Criação')) })).filter(r => r.seq > 0 && !isNaN(r.criacao));
+        const build = js => js.map(o => ({ seq: num(pick(o, 'Sequencia', 'Sequência', 'Ticket', 'Nº Ticket', 'Numero')), raiz: num(pick(o, 'SequenciaRaiz', 'Sequência Raiz', 'Raiz')), pri: String(pick(o, 'Prioridade')).trim().toUpperCase(), aging: pick(o, 'Aging'), grupo: pick(o, 'Grupo Responsável', 'Grupo'), loc: pick(o, 'Localidade'), gestor: pick(o, 'Gestor Atual', 'Gestor'), uf: pick(o, 'UF'), site: pick(o, 'Sigla Site', 'Site'), criacao: toDate(pick(o, 'DataCriacao', 'Data Criação', 'Criação')), alarme: String(pick(o, 'Alarme')), sloc: String(pick(o, 'SiglaLocalidade')) })).filter(r => r.seq > 0 && !isNaN(r.criacao));
         let js = XLSX.utils.sheet_to_json(wb.Sheets[bs], { defval: '' }).map(keyObj);
         let imp = build(js);
         if (!imp.length) { // base crua exportada por outro sistema: leitor alternativo
@@ -188,8 +251,9 @@ $('#file').onchange = async e => {
         const as = find('AFETAÇÃO');
         if (as) { afet = {}; XLSX.utils.sheet_to_json(wb.Sheets[as], { defval: '' }).forEach(o => { const k = norm(o['HL4']); if (k) afet[k] = Number(o['CLIENTES']) || 0 }) }
         $('#meta').textContent = f.name + ' · ' + rows.length + ' tickets' + (ign > 0 ? ' · ' + ign + ' linhas ignoradas (Total/Filtros/vazias)' : '') + (as ? ' · ' + Object.keys(afet).length + ' HL4 na afetação' : '');
-        fp = fuf = fgr = ''; render();
+        fp = fuf = fgr = ''; render(); sbLoad();
     } catch (err) { $('#meta').textContent = 'Não consegui ler o arquivo: ' + err.message }
     e.target.value = '';
 };
 render();
+sbAfet();

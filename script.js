@@ -29,6 +29,7 @@ let rows = [
 ];
 // ---- afetação (base HL4, soma de clientes por hostname) e hostname automático ----
 let afet = {};    // HL4  (P0 e P2) - tabela afetacao_hl4 do Supabase
+let p2map = {};   // código P2 (ex.: essea_g1n06) -> {host, cli}, da coluna P2 da tabela afetacao_hl4
 let afet5 = {};   // HL5D (P1)      - tabela afetacao_hl5d do Supabase
 let sbAlarme = {};   // alarmes dos P1 vindos do Supabase (casos_backup)
 const HRX = /i-br-[a-z]{2}-[a-z0-9]{3}-[a-z0-9]{3}-hl\d[a-z]?-\d+/gi;
@@ -36,12 +37,14 @@ const HRX = /i-br-[a-z]{2}-[a-z0-9]{3}-[a-z0-9]{3}-hl\d[a-z]?-\d+/gi;
 const SUPABASE_URL = '';   // ex.: https://xxxx.supabase.co
 const SUPABASE_KEY = '';   // chave anon public
 const sbCfg = () => ({ url: (store.get('sb_url') || SUPABASE_URL).replace(/\/+$/, ''), key: store.get('sb_key') || SUPABASE_KEY });
-const alarmOf = r => (r.pri === 'P1' && sbAlarme[r.seq]) || r.alarme || '';
+const alarmOf = r => ((r.pri === 'P1' || r.pri === 'P2') && sbAlarme[r.seq]) || r.alarme || '';   // P1: casos_backup | P2: fechamos_historico
 let siteIdx = {};   // SITE (e último trecho do hostname) -> hostnames HL5D
 const bySite = r => { const uf = 'i-br-' + norm(r.uf) + '-', sl = norm(r.sloc), l = (siteIdx[norm(r.site)] || []).filter(h => h.startsWith(uf)); return (sl && l.find(h => h.startsWith(uf + sl + '-'))) || l[0] || '' };
 const autoHost = r => {
     const c = [...new Set((String(alarmOf(r)).match(HRX) || []).map(norm))];
     if (r.pri === 'P1') { const h5 = c.filter(h => /-hl5d?-/.test(h)); return h5.find(h => h in afet5) || bySite(r) || h5[0] || '' }   // P1 = HL5D
+    // P2: o hostname vem do alarme da fechamos_historico (qualquer tipo: HL4, HL5D, HL5G...); o 1º que aparece no texto é o do nó do ticket
+    if (r.pri === 'P2') return c.find(h => h in afet) || c.find(h => h in afet5) || c[0] || '';
     return c.find(h => h in afet) || c.find(h => /-hl4-/.test(h)) || '';
 };
 
@@ -52,8 +55,31 @@ const GREEN = ['RE', 'SWAP', 'CIRE'], PURP = ['CENTRALIZADO', 'OUTRO', 'PI', 'MO
 const gcol = g => GREEN.includes(g) ? 'var(--g1)' : (PURP.includes(g) || g === '') ? 'var(--g2)' : 'var(--g3)';
 function status(ms) { const h = ms / H; return h >= 72 ? '>72HS' : h >= 48 ? '>48HS' : h >= 36 ? '>36HS' : h >= 24 ? '>24HS' : h >= 8 ? '>8HS' : '<8HS' }
 function fmt(ms) { const m = Math.max(0, Math.floor(ms / 6e4)); const d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60; return d + 'd ' + h + ':' + String(mm).padStart(2, '0') }
-const hostOf = r => store.get('hn:' + r.seq) || autoHost(r);
-const riskOf = r => { const h = norm(hostOf(r)), p = r.pri === 'P1' ? afet5 : afet, o = r.pri === 'P1' ? afet : afet5; return !h ? null : h in p ? p[h] : h in o ? o[h] : null };
+// P2: lê o alarme e acha o código P2 da base HL4 (hostname + clientes daquele P2)
+const p2Of = r => {
+    if (r.pri !== 'P2' || !Object.keys(p2map).length) return null;
+    const al = String(alarmOf(r)).toLowerCase();
+    // 1) código P2 escrito no alarme (ex.: IP_SRV#10G#ESSEA_G1N06_1#...)
+    let best = null, bestK = '', pos = 1e9, len = 0;
+    for (const k in p2map) { const i = al.indexOf(k); if (i >= 0 && (i < pos || (i === pos && k.length > len))) { pos = i; len = k.length; best = p2map[k]; bestK = k } }
+    if (best) return { ...best, code: bestK };
+    // 2) forma curta LOC_SITE (ex.: RJO_M85_1_GPON...) + UF do ticket -> UFLOC_G1SITE (ex.: rjrjo_g1m85)
+    for (const m of al.matchAll(/\b([a-z]{3})_([a-z]\d{2})_/g)) { const k = norm(r.uf) + m[1] + '_g1' + m[2], c = p2map[k]; if (c) return { ...c, code: k } }
+    return null;
+};
+// P2 sem hostname: mostra o motivo no próprio campo (e o texto do alarme aparece ao passar o mouse)
+const hnHint = r => {
+    if (r.pri !== 'P2' || hostOf(r)) return 'I-BR-UF-...';
+    if (!sbCfg().url || !sbCfg().key) return 'sem conexão Supabase';
+    if (!Object.keys(p2map).length) return 'base HL4 (P2) não carregada';
+    return sbAlarme[r.seq] ? 'alarme sem código P2 da base' : 'Sequência não achada na fechamos_historico';
+};
+// P2: se o alarme tem "Alarm Source: XXXX", esse é o hostname (ex.: RJO_M85_1_GPON_VLAN_103_104_105-FPT)
+const alarmSource = r => { if (r.pri !== 'P2') return ''; const m = String(alarmOf(r)).match(/alarm\s*source\s*:\s*([^\s,\]]+)/i); return m ? m[1] : '' };
+const hostRaw = r => store.get('hn:' + r.seq) || ((p2Of(r) || {}).code || '').toUpperCase() || alarmSource(r) || autoHost(r);   // P2: código P2 (ex.: RJRJO_G1M85); sem código, fica o Alarm Source/hostname do alarme
+// P0 e P1: hostname em caixa alta
+const hostOf = r => { const h = hostRaw(r); return (r.pri === 'P0' || r.pri === 'P1') ? h.toUpperCase() : h };
+const riskOf = r => { if (r.pri === 'P2') { const man = store.get('hn:' + r.seq), p2 = man ? p2map[norm(man)] : p2Of(r); if (p2) return p2.cli } const h = norm(hostOf(r)), p = r.pri === 'P1' ? afet5 : afet, o = r.pri === 'P1' ? afet : afet5; return !h ? null : h in p ? p[h] : h in o ? o[h] : null };
 
 // ---- estado de filtros ----
 let fp = '', fq = '', fuf = '', fgr = '';
@@ -97,8 +123,8 @@ function render() {
 <td class="num muted">${r.criacao.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
 <td><span class="t${late ? ' late' : ''}" data-ts="${+r.criacao}">${fmt(ms)}</span></td>
 <td class="muted">${status(ms)}</td>
-<td><input class="hn" data-seq="${r.seq}" value="${esc(hostOf(r))}" placeholder="I-BR-UF-..." aria-label="Hostname do ticket ${r.seq}"></td>
-<td class="risk${rk ? ' on' : ''}">${!hostOf(r) ? '—' : rk == null ? '<span class="muted">' + (Object.keys(afet).length + Object.keys(afet5).length ? 'sem registro' : 'sem base') + '</span>' : rk.toLocaleString('pt-BR')}</td></tr>`
+<td><input class="hn" data-seq="${r.seq}" value="${esc(hostOf(r))}" placeholder="${esc(hnHint(r))}" title="${esc(alarmOf(r).slice(0, 300))}" aria-label="Hostname do ticket ${r.seq}"></td>
+<td class="risk${rk ? ' on' : ''}">${!hostOf(r) ? '—' : rk == null && r.pri === 'P1' && Object.keys(afet5).length ? '0' : rk == null ? '<span class="muted">' + (Object.keys(afet).length + Object.keys(afet5).length ? 'sem registro' : 'sem base') + '</span>' : rk.toLocaleString('pt-BR')}</td></tr>`
     }).join('');
     $('#tb').querySelectorAll('.hn').forEach(i => i.onchange = () => { store.set('hn:' + i.dataset.seq, i.value.trim()); render() });
 }
@@ -125,19 +151,27 @@ $('#clear').onclick = () => {
 // ---- importação do .xlsx (abas BACKLOG ATUAL e AFETAÇÃO) ----
 // ---- Supabase: alarme dos P1 na tabela casos_backup (para achar o hostname) ----
 async function sbLoad() {
-    const { url, key } = sbCfg(), info = { set textContent(v) { setInfo('p1', v) } };
-    const seqs = rows.filter(r => r.pri === 'P1').map(r => r.seq);
-    if (!url || !key || !seqs.length) return;
-    try {
-        info.textContent = 'Supabase: buscando os P1…';
-        for (let i = 0; i < seqs.length; i += 100) {
-            const res = await fetch(`${url}/rest/v1/casos_backup?select=sequencia,alarme&sequencia=in.(${seqs.slice(i, i + 100).join(',')})`, { headers: { apikey: key, Authorization: 'Bearer ' + key } });
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            (await res.json()).forEach(x => { sbAlarme[x.sequencia] = x.alarme || '' });
-        }
-        info.textContent = 'Supabase: ' + seqs.filter(s => sbAlarme[s]).length + ' de ' + seqs.length + ' P1 encontrados em casos_backup';
-        render();
-    } catch (err) { info.textContent = 'Supabase: não consegui buscar (' + err.message + ')' }
+    const { url, key } = sbCfg();
+    if (!url || !key) return;
+    // alarme (onde está o hostname) por Sequência: P1 -> casos_backup | P2 -> fechamos_historico
+    const jobs = [['casos_backup', 'P1'], ['fechamos_historico', 'P2']]
+        .map(([t, p]) => [t, p, rows.filter(r => r.pri === p).map(r => r.seq)])
+        .filter(j => j[2].length);
+    if (!jobs.length) return;
+    setInfo('p1', 'Supabase: buscando alarmes…');
+    const msgs = [];
+    for (const [t, p, seqs] of jobs) {
+        try {
+            for (let i = 0; i < seqs.length; i += 100) {
+                const res = await fetch(`${url}/rest/v1/${t}?select=sequencia,alarme&sequencia=in.(${seqs.slice(i, i + 100).join(',')})`, { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                (await res.json()).forEach(x => { sbAlarme[x.sequencia] = x.alarme || '' });
+            }
+            msgs.push(p + ': ' + seqs.filter(q => sbAlarme[q]).length + '/' + seqs.length + ' em ' + t);
+        } catch (err) { msgs.push(p + ': erro em ' + t + ' (' + err.message + ')') }
+    }
+    setInfo('p1', 'Supabase · ' + msgs.join(' · '));
+    render();
 }
 $('#sbbtn').onclick = () => { const c = sbCfg(); $('#sburl').value = c.url; $('#sbkey').value = c.key; $('#cfg').showModal() };
 $('#sbclose').onclick = () => $('#cfg').close();
@@ -156,9 +190,14 @@ async function sbTable(url, key, path) {
 }
 async function sbAfet() {
     const { url, key } = sbCfg(); if (!url || !key) return;
-    const m = {}, m5 = {}, ix = {}; let erro = '';
+    const m = {}, m5 = {}, ix = {}, pm = {}; let erro = '';
     setInfo('afet', 'Supabase: carregando a afetação…');
-    try { (await sbTable(url, key, 'afetacao_hl4?select=hostname,clientes&order=id')).forEach(x => { const h = norm(x.hostname); if (h) m[h] = (m[h] || 0) + (Number(x.clientes) || 0) }); }
+    try {
+        (await sbTable(url, key, 'afetacao_hl4?select=hostname,p2_codigo,clientes&order=id')).forEach(x => {
+            const h = norm(x.hostname); if (!h) return; const c = Number(x.clientes) || 0; m[h] = (m[h] || 0) + c;
+            const k = norm(x.p2_codigo); if (k && k !== '-' && (!pm[k] || c > pm[k].cli)) pm[k] = { host: h, cli: c };   // código repetido: vale a linha com mais clientes
+        });
+    }
     catch (err) { erro += ' · ' + err.message }
     try {
         (await sbTable(url, key, 'afetacao_hl5d?select=hostname,site,afetacao&order=id')).forEach(x => {
@@ -167,8 +206,15 @@ async function sbAfet() {
         })
     }
     catch (err) { erro += ' · ' + err.message }
-    afet = m; afet5 = m5; siteIdx = ix;
-    setInfo('afet', 'Afetação: ' + Object.keys(m).length + ' HL4 + ' + Object.keys(m5).length + ' HL5D (Supabase)' + (erro ? ' · erro' + erro : '')); render();
+    // afetação por código P2 (tabela afetacao_p2): é o número que vale para o P2; se a tabela não existir, ficam os valores da afetacao_hl4
+    try {
+        (await sbTable(url, key, 'afetacao_p2?select=p2_codigo,afetacao&order=p2_codigo')).forEach(x => {
+            const k = norm(x.p2_codigo); if (!k || k === '-') return; const a = Number(x.afetacao) || 0;
+            if (pm[k]) pm[k].cli = a; else pm[k] = { host: '', cli: a };
+        });
+    } catch (err) { erro += ' · ' + err.message }
+    afet = m; afet5 = m5; p2map = pm; siteIdx = ix;
+    setInfo('afet', 'Afetação: ' + Object.keys(m).length + ' HL4 + ' + Object.keys(m5).length + ' HL5D · ' + Object.keys(pm).length + ' códigos P2 (Supabase)' + (erro ? ' · erro' + erro : '')); render();
 }
 
 // leitor de .xlsx independente (para arquivos exportados por sistemas que o SheetJS não lê direito)
