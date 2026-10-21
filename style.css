@@ -639,3 +639,108 @@ h1::after {
 :root[data-theme="light"] .themefab .ic-moon {
     display: block
 }
+
+/* coluna Ações (bloco de notas) */
+th:last-child,
+td.act {
+    text-align: center;
+    width: 64px
+}
+
+.notebtn {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 10px;
+    color: var(--mt)
+}
+
+.notebtn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round
+}
+
+.notebtn.has {
+    color: var(--p2);
+    border-color: var(--p2);
+    background: color-mix(in srgb, var(--p2) 12%, var(--sf))
+}
+
+.notebtn b {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 99px;
+    background: var(--p2);
+    color: #fff;
+    font-size: 10px;
+    line-height: 16px;
+    font-weight: 800
+}
+
+#notas {
+    max-width: 560px
+}
+
+#notasLista {
+    max-height: 38vh;
+    overflow: auto;
+    margin: 10px 0
+}
+
+.nt {
+    border-bottom: 1px solid var(--ln);
+    padding: 9px 0
+}
+
+.nt .mt {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--mt);
+    font-weight: 600
+}
+
+.nt .mt button {
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    color: var(--mt);
+    font-size: 16px;
+    line-height: 1
+}
+
+.nt .txt {
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-top: 3px;
+    font-weight: 500;
+    color: var(--tx)
+}
+
+#notasTxt {
+    display: block;
+    width: 100%;
+    font: inherit;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border: 1px solid var(--ln);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--tx);
+    resize: vertical;
+    min-height: 84px
+}

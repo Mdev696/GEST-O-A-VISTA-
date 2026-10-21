@@ -10,23 +10,8 @@ const store = {
     set(k, v) { try { localStorage.setItem(k, v) } catch (e) { mem[k] = v } }
 };
 
-// ---- dados de exemplo (horas atrás em vez de data fixa) ----
-const now0 = Date.now();
-const D = (a, b, p, ag, g, l, ge, uf, s, h) => ({ seq: a, raiz: b, pri: p, aging: ag, grupo: g, loc: l, gestor: ge, uf, site: s, criacao: new Date(now0 - h * H) });
-let rows = [
-    D(369506618, 369506620, 'P0', '<=24h', 'SWAP', 'RESENDE', 'O&M-RE_SUDESTE_SWAP_OPERADORAS', 'RJ', 'RRS', 8.55),
-    D(369506624, 369512139, 'P0', '<=24h', 'SWAP', 'PARATY', 'O&M-RE_SUDESTE_SWAP_OPERADORAS', 'RJ', 'PAT', 8.55),
-    D(369521737, 0, 'P0', '<=24h', 'PI', 'RIO DE JANEIRO', 'TEL_O&M-RJ/ES(Terceiro)', 'RJ', 'DJU', 3.28),
-    D(368802996, 0, 'P1', '+24h', 'PI', 'VASSOURAS', 'O&M ACESSO VIVO_N1_RJ/ES_Acesso', 'RJ', 'VAR', 15 * 24 + 8.6),
-    D(369472387, 369475842, 'P1', '+24h', 'RE', 'CABO FRIO', 'O&M-RE_RJ/ES', 'RJ', 'TCF', 28.7),
-    D(369507050, 369506196, 'P1', '<=24h', 'SWAP', 'RIO CLARO', 'O&M-RE_SUDESTE_SWAP_OPERADORAS', 'RJ', 'ASA', 8.38),
-    D(369515004, 369514038, 'P1', '<=24h', 'SWAP', 'JUIZ DE FORA', 'O&M-RE_SUDESTE_SWAP_OPERADORAS', 'MG', 'SDE', 5.65),
-    D(369515507, 369522711, 'P1', '<=24h', 'SWAP', 'ALEGRE', 'OPERADORAS - Protocolo de Abertura', 'ES', 'ALC', 5.46),
-    D(369503729, 369513995, 'P2', '<=24h', 'RE', 'VITÓRIA', 'O&M-RE_RJ/ES', 'ES', 'GVT', 9.62),
-    D(369512319, 369520947, 'P2', '<=24h', 'RE', 'VILA VELHA', 'O&M-RE_RJ/ES', 'ES', 'VEC', 6.52),
-    D(369514414, 0, 'P2', '<=24h', 'PI', 'SERRA', 'TEL_O&M-RJ/ES(Terceiro)', 'ES', 'MAS', 5.85),
-    D(369521811, 0, 'P2', '<=24h', 'PI', 'SERRA', 'TEL_O&M-RJ/ES(Terceiro)', 'ES', 'PFR', 3.23)
-];
+// ---- tickets exibidos (começa vazio; vem da importação da planilha ou do repositório de bases) ----
+let rows = [];
 // ---- afetação (base HL4, soma de clientes por hostname) e hostname automático ----
 let afet = {};    // HL4  (P0 e P2) - tabela afetacao_hl4 do Supabase
 let p2map = {};   // código P2 (ex.: essea_g1n06) -> {host, cli}, da coluna P2 da tabela afetacao_hl4
@@ -100,7 +85,34 @@ function fill(sel, vals) {
     el.innerHTML = first + [...new Set(vals)].filter(Boolean).sort().map(v => `<option>${esc(v)}</option>`).join(''); el.value = cur
 }
 
+// ---- Ações: bloco de notas por ticket (texto simples; guardado neste navegador, por Sequência) ----
+const NOTE_SVG = '<svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>';
+const notasOf = seq => { try { return JSON.parse(store.get('nt:' + seq) || '[]') } catch (e) { return [] } };
+const notasSet = (seq, arr) => store.set('nt:' + seq, JSON.stringify(arr));
+const notaBtn = r => { const n = notasOf(r.seq).length; return `<button type="button" class="notebtn${n ? ' has' : ''}" data-seq="${r.seq}" title="${n ? n + ' atualização(ões)' : 'Adicionar notas'}" aria-label="Notas do ticket ${r.seq}">${NOTE_SVG}${n ? '<b>' + n + '</b>' : ''}</button>` };
+let notaSeq = 0;
+function listarNotas() {
+    const l = notasOf(notaSeq), box = $('#notasLista');
+    box.innerHTML = l.length ? l.map((n, i) => ({ n, i })).reverse().map(({ n, i }) => `<div class="nt"><div class="mt"><span>${repoQuando(n.t)}${n.a ? ' · ' + esc(n.a) : ''}</span><button type="button" data-i="${i}" title="Remover esta atualização" aria-label="Remover atualização">×</button></div><div class="txt">${esc(n.x)}</div></div>`).join('') : '<div class="sub">Nenhuma atualização ainda.</div>';
+    box.querySelectorAll('button').forEach(b => b.onclick = () => { const l2 = notasOf(notaSeq); l2.splice(Number(b.dataset.i), 1); notasSet(notaSeq, l2); listarNotas(); render() });
+}
+function abrirNotas(seq) {
+    notaSeq = seq; const r = rows.find(x => x.seq === seq);
+    $('#notasTit').textContent = 'Notas · ' + seq;
+    $('#notasSub').textContent = r ? [r.pri, r.site, r.loc, hostOf(r)].filter(Boolean).join(' · ') : '';
+    $('#notasTxt').value = ''; listarNotas(); $('#notas').showModal(); setTimeout(() => $('#notasTxt').focus(), 0);
+}
+function addNota() {
+    const x = $('#notasTxt').value.trim(); if (!x) return;
+    const l = notasOf(notaSeq); l.push({ t: new Date().toISOString(), a: store.get('user_name') || '', x });
+    notasSet(notaSeq, l); $('#notasTxt').value = ''; listarNotas(); render();
+}
+$('#notasAdd').onclick = addNota;
+$('#notasClose').onclick = () => $('#notas').close();
+$('#notasTxt').onkeydown = e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); addNota() } };
+
 function strip() {
+    // cartões de prioridade: sempre mostram o total (não mudam quando se seleciona um grupo)
     const c = p => rows.filter(r => r.pri === p).length;
     const items = [['', 'Total', rows.length, ''], ['P0', 'P0', c('P0'), 'var(--p0)'], ['P1', 'P1', c('P1'), 'var(--p1)'], ['P2', 'P2', c('P2'), 'var(--p2)'], ['P3', 'P3', c('P3'), 'var(--p3)'], ['P4', 'P4', c('P4'), 'var(--p4)'], ['P5', 'P5', c('P5'), 'var(--p5)'], ['+24h', 'Aging +24h', rows.filter(r => r.aging === '+24h').length, 'var(--tx)']];
     $('#strip').innerHTML = items.map(([k, l, n, col]) => `<button type="button" data-k="${k}" aria-pressed="${fp === k}" style="--c:${col || 'var(--tx)'}"><b>${n}</b><span>${l}</span></button>`).join('');
@@ -109,7 +121,9 @@ function strip() {
 
 // cartões de grupo (PI, RE, SWAP): substituem o filtro "Todos os grupos"
 function strip2() {
-    const c = g => rows.filter(r => r.grupo === g).length;
+    // cartões de grupo: se uma prioridade (ou o Aging +24h) estiver selecionada, contam só os tickets dela
+    const base = rows.filter(r => fp === '+24h' ? r.aging === '+24h' : (!fp || r.pri === fp));
+    const c = g => base.filter(r => r.grupo === g).length;
     $('#strip2').innerHTML = ['PI', 'RE', 'SWAP'].map(g => `<button type="button" data-g="${g}" aria-pressed="${fgr === g}" style="--c:${gcol(g)}"><b>${c(g)}</b><span>${g}</span></button>`).join('');
     $('#strip2').querySelectorAll('button').forEach(b => b.onclick = () => { fgr = (fgr === b.dataset.g) ? '' : b.dataset.g; render() });
 }
@@ -143,9 +157,11 @@ function render() {
 <td><span class="t${late ? ' late' : ''}" data-ts="${+r.criacao}">${fmt(ms)}</span></td>
 <td>${statusCell(ms)}</td>
 <td><input class="hn" data-seq="${r.seq}" value="${esc(hostOf(r))}" placeholder="${esc(hnHint(r))}" aria-label="Hostname do ticket ${r.seq}"></td>
-<td class="risk${rk ? ' on' : ''}">${!hostOf(r) ? '—' : rk == null && PO[r.pri] > 2 ? '—' : rk == null && r.pri === 'P1' && Object.keys(afet5).length ? '0' : rk == null ? '<span class="muted">' + (Object.keys(afet).length + Object.keys(afet5).length ? 'sem registro' : 'sem base') + '</span>' : rk.toLocaleString('pt-BR')}</td></tr>`
+<td class="risk${rk ? ' on' : ''}">${!hostOf(r) ? '—' : rk == null && PO[r.pri] > 2 ? '—' : rk == null && r.pri === 'P1' && Object.keys(afet5).length ? '0' : rk == null ? '<span class="muted">' + (Object.keys(afet).length + Object.keys(afet5).length ? 'sem registro' : 'sem base') + '</span>' : rk.toLocaleString('pt-BR')}</td>
+<td class="act">${notaBtn(r)}</td></tr>`
     }).join('');
     $('#more').hidden = list.length <= LIM; $('#more').textContent = 'Mostrando ' + LIM + ' de ' + list.length + ' tickets. Aumente o limite ou use os filtros.';
+    $('#tb').querySelectorAll('.notebtn').forEach(b => b.onclick = () => abrirNotas(Number(b.dataset.seq)));
     $('#tb').querySelectorAll('.hn').forEach(i => i.onchange = () => { store.set('hn:' + i.dataset.seq, i.value.trim()); render() });
 }
 

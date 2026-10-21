@@ -16,7 +16,7 @@
             <div>
                 <h1>GRDD</h1>
                 <div class="sub" id="info"></div>
-                <div class="sub" id="meta">Dados de exemplo · importe o .xlsx para usar os seus</div>
+                <div class="sub" id="meta">Importe o .xlsx para começar</div>
             </div>
             <div class="btns">
                 <button id="basesbtn" type="button">Bases</button>
@@ -66,6 +66,7 @@
                         <th>Status</th>
                         <th>Hostname</th>
                         <th>Risco de afetação</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tb"></tbody>
@@ -89,6 +90,15 @@
         <h2>Relatórios guardados</h2>
         <div id="baseslista" class="sub"></div>
         <div class="btns" style="margin-top:12px"><button id="basesclose" type="button">Fechar</button></div>
+    </dialog>
+    <dialog id="notas">
+        <h2 id="notasTit">Notas</h2>
+        <div class="sub" id="notasSub"></div>
+        <div id="notasLista"></div>
+        <textarea id="notasTxt" rows="4" placeholder="Escreva a atualização (texto simples)…"></textarea>
+        <div class="sub">Ctrl + Enter adiciona. As notas ficam guardadas neste navegador, por Sequência.</div>
+        <div class="btns" style="margin-top:12px"><button id="notasAdd" type="button">Adicionar
+                atualização</button><button id="notasClose" type="button">Fechar</button></div>
     </dialog>
     <button id="theme" type="button" class="themefab" aria-label="Alternar tema claro/escuro" title="Alternar tema">
         <svg class="ic-moon" viewBox="0 0 24 24">
