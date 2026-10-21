@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>GRDD</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <div>
+                <h1>GRDD</h1>
+                <div class="sub" id="info"></div>
+                <div class="sub" id="meta">Dados de exemplo · importe o .xlsx para usar os seus</div>
+            </div>
+            <div class="btns">
+                <button id="sbbtn" type="button">Supabase</button>
+                <label class="file">Importar planilha<input id="file" type="file" accept=".xlsx,.xls,.csv"
+                        hidden></label>
+                <button id="clear" type="button" class="danger">Limpar tabela</button>
+                <button id="theme" type="button">Tema</button>
+            </div>
+        </header>
+
+        <div class="strip" id="strip"></div>
+        <div class="strip" id="strip2"></div>
+
+        <div class="bar">
+            <input id="q" type="search" placeholder="Buscar ticket, localidade, site ou hostname">
+            <select id="uf" aria-label="UF">
+                <option value="">Todas as UFs</option>
+            </select>
+            <select id="lim" aria-label="Linhas exibidas">
+                <option value="10">10 linhas</option>
+                <option value="20">20 linhas</option>
+                <option value="30">30 linhas</option>
+                <option value="50">50 linhas</option>
+                <option value="100">100 linhas</option>
+            </select>
+            <button id="max" type="button" aria-pressed="false">Maximizar tabela</button>
+        </div>
+
+        <div class="tbl">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sequência</th>
+                        <th>Raiz</th>
+                        <th>Prior.</th>
+                        <th>Aging</th>
+                        <th>Grupo</th>
+                        <th>Localidade</th>
+                        <th>Gestor atual</th>
+                        <th>UF</th>
+                        <th>Site</th>
+                        <th>Criação</th>
+                        <th>T. decorrido</th>
+                        <th>Status</th>
+                        <th>Hostname</th>
+                        <th>Risco de afetação</th>
+                    </tr>
+                </thead>
+                <tbody id="tb"></tbody>
+            </table>
+            <div id="empty" class="empty" hidden>Nenhum ticket com esses filtros.</div>
+            <div id="more" class="empty" hidden></div>
+        </div>
+    </div>
+
+    <dialog id="cfg">
+        <h2>Conexão Supabase</h2>
+        <label>URL do projeto<input id="sburl" placeholder="https://xxxx.supabase.co"></label>
+        <label>Chave anon (public)<input id="sbkey" type="password" placeholder="eyJ..."></label>
+        <p class="sub">Lê casos_backup (alarme dos P1), fechamos_historico (alarme dos P2), afetacao_hl4 (P0/P2) e
+            afetacao_hl5d (P1). Fica guardada só neste navegador.</p>
+        <div class="btns"><button id="sbsave" type="button">Salvar e buscar</button><button id="sbclose"
+                type="button">Fechar</button></div>
+    </dialog>
+    <script src="script.js"></script>
+</body>
+
+</html>

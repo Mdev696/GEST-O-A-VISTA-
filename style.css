@@ -549,3 +549,93 @@ dialog input {
         animation: none
     }
 }
+
+/* título GRDD */
+h1 {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    line-height: 1;
+    display: inline-block;
+    position: relative;
+    padding-bottom: 9px;
+    background: linear-gradient(90deg, var(--p2), var(--p3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent
+}
+
+h1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--p2), var(--p3))
+}
+
+/* botão de tema flutuante */
+.themefab {
+    position: fixed;
+    right: 18px;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    z-index: 50;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--ln);
+    background: var(--sf);
+    color: var(--tx);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+    transition: transform .15s, box-shadow .15s
+}
+
+.themefab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .26)
+}
+
+.themefab svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round
+}
+
+.themefab .ic-sun {
+    display: none
+}
+
+@media (prefers-color-scheme:dark) {
+    :root:not([data-theme="light"]) .themefab .ic-moon {
+        display: none
+    }
+
+    :root:not([data-theme="light"]) .themefab .ic-sun {
+        display: block
+    }
+}
+
+:root[data-theme="dark"] .themefab .ic-moon {
+    display: none
+}
+
+:root[data-theme="dark"] .themefab .ic-sun {
+    display: block
+}
+
+:root[data-theme="light"] .themefab .ic-sun {
+    display: none
+}
+
+:root[data-theme="light"] .themefab .ic-moon {
+    display: block
+}

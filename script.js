@@ -92,7 +92,7 @@ const hostOf = r => { const h = hostRaw(r); return r.pri !== 'P2' ? h.toUpperCas
 const riskOf = r => { if (r.pri === 'P2') { const man = store.get('hn:' + r.seq), p2 = man ? p2map[norm(man)] : p2Of(r); if (p2) return p2.cli } const h = norm(hostOf(r)), p = r.pri === 'P1' ? afet5 : afet, o = r.pri === 'P1' ? afet : afet5; return !h ? null : h in p ? p[h] : h in o ? o[h] : null };
 
 // ---- estado de filtros ----
-let fp = '', fq = '', fuf = '', fgr = '';
+let fp = '', fq = '', fuf = '', fgr = '', fs = '';
 let LIM = Math.min(100, Math.max(10, Number(store.get('lim')) || 50));   // limite de linhas exibidas (10 a 100)
 
 function fill(sel, vals) {
@@ -121,6 +121,7 @@ function render() {
     const list = rows.filter(r => {
         if (fp === '+24h' ? r.aging !== '+24h' : (fp && r.pri !== fp)) return false;
         if (fuf && r.uf !== fuf) return false; if (fgr && r.grupo !== fgr) return false;
+        if (fs && statusKey(t - r.criacao) !== fs) return false;
         if (fq) { const s = norm([r.seq, r.raiz, r.loc, r.site, r.gestor, hostOf(r)].join(' ')); if (!s.includes(fq)) return false }
         return true;
     }).sort((a, b) => (PO[a.pri] - PO[b.pri]) || (a.criacao - b.criacao));
@@ -153,6 +154,9 @@ setInterval(() => { if (document.activeElement && document.activeElement.classLi
 
 $('#q').oninput = e => { fq = norm(e.target.value); render() };
 $('#uf').onchange = e => { fuf = e.target.value; render() };
+// filtro de Status: as opções saem de STATUS_TXT (se trocar os textos lá, o filtro acompanha)
+$('#fst').innerHTML += Object.entries(STATUS_TXT).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+$('#fst').onchange = e => { fs = e.target.value; render() };
 $('#lim').value = String(LIM); $('#lim').onchange = e => { LIM = Math.min(100, Math.max(10, Number(e.target.value) || 50)); store.set('lim', LIM); render() };
 $('#theme').onclick = () => { const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches; r.dataset.theme = dark ? 'light' : 'dark' };
 
@@ -163,7 +167,7 @@ $('#clear').onclick = () => {
     const b = $('#clear');
     if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = 'Confirmar limpeza?'; armT = setTimeout(() => { b.classList.remove('arm'); b.textContent = 'Limpar tabela' }, 3500); return }
     clearTimeout(armT); b.classList.remove('arm'); b.textContent = 'Limpar tabela';
-    rows = []; sbAlarme = {}; fp = fq = fuf = fgr = ''; $('#q').value = ''; $('#uf').value = '';
+    rows = []; sbAlarme = {}; fp = fq = fuf = fgr = fs = ''; $('#q').value = ''; $('#uf').value = ''; $('#fst').value = '';
     $('#meta').textContent = 'Tabela vazia · importe uma nova planilha (.xlsx)'; render()
 };
 
@@ -192,9 +196,9 @@ async function sbLoad() {
     setInfo('p1', 'Supabase · ' + msgs.join(' · '));
     render();
 }
-$('#sbbtn').onclick = () => { const c = sbCfg(); $('#sburl').value = c.url; $('#sbkey').value = c.key; $('#cfg').showModal() };
+$('#sbbtn').onclick = () => { const c = sbCfg(); $('#sburl').value = c.url; $('#sbkey').value = c.key; $('#sbnome').value = store.get('user_name') || ''; $('#cfg').showModal() };
 $('#sbclose').onclick = () => $('#cfg').close();
-$('#sbsave').onclick = () => { store.set('sb_url', $('#sburl').value.trim()); store.set('sb_key', $('#sbkey').value.trim()); $('#cfg').close(); sbAfet(); sbLoad() };
+$('#sbsave').onclick = () => { store.set('sb_url', $('#sburl').value.trim()); store.set('sb_key', $('#sbkey').value.trim()); store.set('user_name', $('#sbnome').value.trim()); $('#cfg').close(); sbAfet(); sbLoad(); repoUltima() };
 
 // ---- Supabase: base de afetação (tabela afetacao_hl4, soma de clientes por hostname) ----
 const st = {}; const setInfo = (k, v) => { st[k] = v; $('#info').textContent = Object.values(st).filter(Boolean).join(' · ') };
@@ -235,6 +239,59 @@ async function sbAfet() {
     afet = m; afet5 = m5; p2map = pm; siteIdx = ix;
     setInfo('afet', 'Afetação: ' + Object.keys(m).length + ' HL4 + ' + Object.keys(m5).length + ' HL5D · ' + Object.keys(pm).length + ' códigos P2 (Supabase)' + (erro ? ' · erro' + erro : '')); render();
 }
+
+// ---- Repositório de bases (tabela bases_importadas no Supabase) ----
+// Ao importar uma planilha, a base é guardada lá; ao abrir o painel, a última base guardada é carregada.
+let importouAgora = false;   // true depois que o usuário importa/escolhe uma base nesta sessão (a "última" não sobrescreve)
+const repoHeaders = (key, extra) => ({ apikey: key, Authorization: 'Bearer ' + key, ...extra });
+const repoQuando = d => new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+async function repoSalvar(nome) {
+    const { url, key } = sbCfg(); if (!url || !key) return;
+    try {
+        const tickets = rows.map(r => ({ ...r, alarme: String(r.alarme || '').slice(0, 2000) }));
+        const res = await fetch(`${url}/rest/v1/bases_importadas`, { method: 'POST', headers: repoHeaders(key, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }), body: JSON.stringify({ nome_arquivo: nome, importado_por: store.get('user_name') || 'anônimo', importado_em: new Date().toISOString(), total_tickets: rows.length, tickets }) });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        setInfo('repo', 'Repositório: base salva');
+    } catch (err) { setInfo('repo', 'Repositório: não salvou (' + err.message + ')') }
+}
+function aplicarBase(b) {
+    rows = (b.tickets || []).map(t => ({ ...t, criacao: new Date(t.criacao) })).filter(r => r.seq > 0 && !isNaN(r.criacao));
+    fp = fuf = fgr = ''; sbAlarme = {};
+    $('#meta').textContent = 'Repositório: ' + b.nome_arquivo + ' · ' + rows.length + ' tickets · importada por ' + (b.importado_por || '—') + ' em ' + repoQuando(b.importado_em);
+    render(); sbLoad();
+}
+async function repoUltima() {
+    const { url, key } = sbCfg(); if (!url || !key) return;
+    try {
+        const res = await fetch(`${url}/rest/v1/bases_importadas?select=nome_arquivo,importado_por,importado_em,total_tickets,tickets&order=importado_em.desc&limit=1`, { headers: repoHeaders(key) });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const [b] = await res.json();
+        if (!b) { setInfo('repo', 'Repositório: vazio'); return }
+        if (importouAgora) return;
+        aplicarBase(b); setInfo('repo', 'Repositório: última base carregada');
+    } catch (err) { setInfo('repo', 'Repositório: não carregou (' + err.message + ')') }
+}
+async function repoLista() {
+    const { url, key } = sbCfg(), box = $('#baseslista');
+    if (!url || !key) { box.textContent = 'Configure o Supabase primeiro (botão Supabase).'; return }
+    box.textContent = 'Carregando…';
+    try {
+        const res = await fetch(`${url}/rest/v1/bases_importadas?select=id,nome_arquivo,importado_por,importado_em,total_tickets&order=importado_em.desc&limit=20`, { headers: repoHeaders(key) });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const l = await res.json();
+        box.innerHTML = l.length ? l.map(b => `<div class="bl"><div><b>${esc(b.nome_arquivo)}</b><br><span class="sub">${esc(b.importado_por || '—')} · ${repoQuando(b.importado_em)} · ${b.total_tickets} tickets</span></div><button type="button" data-id="${b.id}">Carregar</button></div>`).join('') : 'Nenhuma base guardada ainda.';
+        box.querySelectorAll('button').forEach(btn => btn.onclick = async () => {
+            btn.textContent = '…';
+            try {
+                const r2 = await fetch(`${url}/rest/v1/bases_importadas?id=eq.${btn.dataset.id}&select=nome_arquivo,importado_por,importado_em,total_tickets,tickets`, { headers: repoHeaders(key) });
+                if (!r2.ok) throw new Error('HTTP ' + r2.status);
+                const [b] = await r2.json(); importouAgora = true; aplicarBase(b); $('#bases').close();
+            } catch (err) { btn.textContent = 'erro: ' + err.message }
+        });
+    } catch (err) { box.textContent = 'Erro ao listar: ' + err.message }
+}
+$('#basesbtn').onclick = () => { $('#bases').showModal(); repoLista() };
+$('#basesclose').onclick = () => $('#bases').close();
 
 // leitor de .xlsx independente (para arquivos exportados por sistemas que o SheetJS não lê direito)
 async function rawRead(buf) {
@@ -316,11 +373,12 @@ $('#file').onchange = async e => {
         const as = find('AFETAÇÃO');
         if (as) { afet = {}; XLSX.utils.sheet_to_json(wb.Sheets[as], { defval: '' }).forEach(o => { const k = norm(o['HL4']); if (k) afet[k] = Number(o['CLIENTES']) || 0 }) }
         $('#meta').textContent = f.name + ' · ' + rows.length + ' tickets' + (ign > 0 ? ' · ' + ign + ' linhas ignoradas (Total/Filtros/vazias)' : '') + (as ? ' · ' + Object.keys(afet).length + ' HL4 na afetação' : '');
-        fp = fuf = fgr = ''; render(); sbLoad();
+        fp = fuf = fgr = ''; render(); sbLoad(); importouAgora = true; repoSalvar(f.name);   // importar > salva a base e registra a hora
     } catch (err) { $('#meta').textContent = 'Não consegui ler o arquivo: ' + err.message }
     e.target.value = '';
 };
 // mensagens de status (afetação, Supabase, importação) ficam escondidas; só aparecem quando há erro
-['#info', '#meta'].forEach(sel => new MutationObserver(() => $(sel).classList.toggle('err', /erro|não consegui|não carregou|nenhuma linha/i.test($(sel).textContent))).observe($(sel), { childList: true, characterData: true, subtree: true }));
+['#info', '#meta'].forEach(sel => new MutationObserver(() => $(sel).classList.toggle('err', /erro|não consegui|não carregou|não salvou|nenhuma linha/i.test($(sel).textContent))).observe($(sel), { childList: true, characterData: true, subtree: true }));
 render();
 sbAfet();
+repoUltima();
