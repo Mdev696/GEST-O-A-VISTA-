@@ -34,13 +34,20 @@ let afet5 = {};   // HL5D (P1)      - tabela afetacao_hl5d do Supabase
 let sbAlarme = {};   // alarmes dos P1 vindos do Supabase (casos_backup)
 const HRX = /i-br-[a-z]{2}-[a-z0-9]{3}-[a-z0-9]{3}-hl\d[a-z]?-\d+/gi;
 // Preencha aqui se quiser deixar a conexão fixa no código (ou use o botão Supabase na tela)
-const SUPABASE_URL = '';   // ex.: https://xxxx.supabase.co
-const SUPABASE_KEY = '';   // chave anon public
+const SUPABASE_URL = 'https://fgcrdoyquvzihgnmvspf.supabase.co';   // ex.: https://xxxx.supabase.co
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnY3Jkb3lxdXZ6aWhnbm12c3BmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNTY3NzksImV4cCI6MjEwNjYzMjc3OX0.V8hsgf52PlIjukEyQmhtwtjzN26Mv0OVePEwkjXwtS0';   // chave anon public
 const sbCfg = () => ({ url: (store.get('sb_url') || SUPABASE_URL).replace(/\/+$/, ''), key: store.get('sb_key') || SUPABASE_KEY });
 const alarmOf = r => ((r.pri === 'P1' || r.pri === 'P2') && sbAlarme[r.seq]) || r.alarme || '';   // P1: casos_backup | P2: fechamos_historico
 let siteIdx = {};   // SITE (e último trecho do hostname) -> hostnames HL5D
 const bySite = r => { const uf = 'i-br-' + norm(r.uf) + '-', sl = norm(r.sloc), l = (siteIdx[norm(r.site)] || []).filter(h => h.startsWith(uf)); return (sl && l.find(h => h.startsWith(uf + sl + '-'))) || l[0] || '' };
+// P3, P4 e P5: não têm tabela de afetação; o hostname vem do alarme (NODE:..., ou o equipamento da Ponta A, ex.: MS-ESCCA_O1I01)
+const nodeHost = r => {
+    const al = String(alarmOf(r));
+    const m = al.match(/NODE:\s*([A-Za-z0-9_-]+)/i) || al.match(/(MS-[A-Z]{2}[A-Z0-9]{3}_[A-Z0-9]{4,5})(?![A-Z0-9])/i);
+    return m ? m[1] : (al.match(HRX) || [])[0] || '';
+};
 const autoHost = r => {
+    if (PO[r.pri] > 2) return nodeHost(r);   // P3, P4, P5
     const c = [...new Set((String(alarmOf(r)).match(HRX) || []).map(norm))];
     if (r.pri === 'P1') { const h5 = c.filter(h => /-hl5d?-/.test(h)); return h5.find(h => h in afet5) || bySite(r) || h5[0] || '' }   // P1 = HL5D
     // P2: o hostname vem do alarme da fechamos_historico (qualquer tipo: HL4, HL5D, HL5G...); o 1º que aparece no texto é o do nó do ticket
@@ -49,11 +56,14 @@ const autoHost = r => {
 };
 
 // ---- regras (iguais às da planilha) ----
-const PO = { P0: 0, P1: 1, P2: 2 };
-const PC = { P0: 'var(--p0)', P1: 'var(--p1)', P2: 'var(--p2)' };
+const PO = { P0: 0, P1: 1, P2: 2, P3: 3, P4: 4, P5: 5 };
+const PC = { P0: 'var(--p0)', P1: 'var(--p1)', P2: 'var(--p2)', P3: 'var(--p3)', P4: 'var(--p4)', P5: 'var(--p5)' };
 const GREEN = ['RE', 'SWAP', 'CIRE'], PURP = ['CENTRALIZADO', 'OUTRO', 'PI', 'MONIT_N1_BL', 'SOBRESSALENTES'];
 const gcol = g => GREEN.includes(g) ? 'var(--g1)' : (PURP.includes(g) || g === '') ? 'var(--g2)' : 'var(--g3)';
-function status(ms) { const h = ms / H; return h >= 72 ? '>72HS' : h >= 48 ? '>48HS' : h >= 36 ? '>36HS' : h >= 24 ? '>24HS' : h >= 8 ? '>8HS' : '<8HS' }
+// Status pelo tempo decorrido: < 2h normal | 2h a 4h atenção | > 4h crítico (bolinha piscando)
+const STATUS_TXT = { ok: 'NORMAL', warn: 'ATENÇÃO', crit: 'CRÍTICO' };   // troque os textos aqui (ex.: 'OK', 'ALERTA', 'ESTOUROU')
+function statusKey(ms) { const h = ms / H; return h < 2 ? 'ok' : h <= 4 ? 'warn' : 'crit' }
+function statusCell(ms) { const k = statusKey(ms); return `<span class="st ${k}"><i></i>${STATUS_TXT[k]}</span>` }
 function fmt(ms) { const m = Math.max(0, Math.floor(ms / 6e4)); const d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60; return d + 'd ' + h + ':' + String(mm).padStart(2, '0') }
 // P2: lê o alarme e acha o código P2 da base HL4 (hostname + clientes daquele P2)
 const p2Of = r => {
@@ -77,12 +87,13 @@ const hnHint = r => {
 // P2: se o alarme tem "Alarm Source: XXXX", esse é o hostname (ex.: RJO_M85_1_GPON_VLAN_103_104_105-FPT)
 const alarmSource = r => { if (r.pri !== 'P2') return ''; const m = String(alarmOf(r)).match(/alarm\s*source\s*:\s*([^\s,\]]+)/i); return m ? m[1] : '' };
 const hostRaw = r => store.get('hn:' + r.seq) || ((p2Of(r) || {}).code || '').toUpperCase() || alarmSource(r) || autoHost(r);   // P2: código P2 (ex.: RJRJO_G1M85); sem código, fica o Alarm Source/hostname do alarme
-// P0 e P1: hostname em caixa alta
-const hostOf = r => { const h = hostRaw(r); return (r.pri === 'P0' || r.pri === 'P1') ? h.toUpperCase() : h };
+// todas as prioridades, menos P2: hostname em caixa alta
+const hostOf = r => { const h = hostRaw(r); return r.pri !== 'P2' ? h.toUpperCase() : h };
 const riskOf = r => { if (r.pri === 'P2') { const man = store.get('hn:' + r.seq), p2 = man ? p2map[norm(man)] : p2Of(r); if (p2) return p2.cli } const h = norm(hostOf(r)), p = r.pri === 'P1' ? afet5 : afet, o = r.pri === 'P1' ? afet : afet5; return !h ? null : h in p ? p[h] : h in o ? o[h] : null };
 
 // ---- estado de filtros ----
 let fp = '', fq = '', fuf = '', fgr = '';
+let LIM = Math.min(100, Math.max(10, Number(store.get('lim')) || 50));   // limite de linhas exibidas (10 a 100)
 
 function fill(sel, vals) {
     const el = $(sel), cur = el.value; const first = el.firstElementChild.outerHTML;
@@ -91,14 +102,21 @@ function fill(sel, vals) {
 
 function strip() {
     const c = p => rows.filter(r => r.pri === p).length;
-    const items = [['', 'Total', rows.length, ''], ['P0', 'P0', c('P0'), 'var(--p0)'], ['P1', 'P1', c('P1'), 'var(--p1)'], ['P2', 'P2', c('P2'), 'var(--p2)'], ['+24h', 'Aging +24h', rows.filter(r => r.aging === '+24h').length, 'var(--tx)']];
+    const items = [['', 'Total', rows.length, ''], ['P0', 'P0', c('P0'), 'var(--p0)'], ['P1', 'P1', c('P1'), 'var(--p1)'], ['P2', 'P2', c('P2'), 'var(--p2)'], ['P3', 'P3', c('P3'), 'var(--p3)'], ['P4', 'P4', c('P4'), 'var(--p4)'], ['P5', 'P5', c('P5'), 'var(--p5)'], ['+24h', 'Aging +24h', rows.filter(r => r.aging === '+24h').length, 'var(--tx)']];
     $('#strip').innerHTML = items.map(([k, l, n, col]) => `<button type="button" data-k="${k}" aria-pressed="${fp === k}" style="--c:${col || 'var(--tx)'}"><b>${n}</b><span>${l}</span></button>`).join('');
     $('#strip').querySelectorAll('button').forEach(b => b.onclick = () => { fp = (fp === b.dataset.k) ? '' : b.dataset.k; render() });
 }
 
+// cartões de grupo (PI, RE, SWAP): substituem o filtro "Todos os grupos"
+function strip2() {
+    const c = g => rows.filter(r => r.grupo === g).length;
+    $('#strip2').innerHTML = ['PI', 'RE', 'SWAP'].map(g => `<button type="button" data-g="${g}" aria-pressed="${fgr === g}" style="--c:${gcol(g)}"><b>${c(g)}</b><span>${g}</span></button>`).join('');
+    $('#strip2').querySelectorAll('button').forEach(b => b.onclick = () => { fgr = (fgr === b.dataset.g) ? '' : b.dataset.g; render() });
+}
+
 function render() {
-    strip();
-    fill('#uf', rows.map(r => r.uf)); fill('#gr', rows.map(r => r.grupo));
+    strip(); strip2();
+    fill('#uf', rows.map(r => r.uf));
     const t = Date.now();
     const list = rows.filter(r => {
         if (fp === '+24h' ? r.aging !== '+24h' : (fp && r.pri !== fp)) return false;
@@ -108,7 +126,7 @@ function render() {
     }).sort((a, b) => (PO[a.pri] - PO[b.pri]) || (a.criacao - b.criacao));
     $('#empty').textContent = rows.length ? 'Nenhum ticket com esses filtros.' : 'Tabela vazia. Importe uma planilha para começar.';
     $('#empty').hidden = list.length > 0;
-    $('#tb').innerHTML = list.map(r => {
+    $('#tb').innerHTML = list.slice(0, LIM).map(r => {
         const ms = t - r.criacao, late = ms >= 864e5, rk = riskOf(r);
         return `<tr style="--c:${PC[r.pri] || 'var(--mt)'}">
 <td class="num">${r.seq}</td>
@@ -122,10 +140,11 @@ function render() {
 <td><span class="site">${esc(r.site)}</span></td>
 <td class="num muted">${r.criacao.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
 <td><span class="t${late ? ' late' : ''}" data-ts="${+r.criacao}">${fmt(ms)}</span></td>
-<td class="muted">${status(ms)}</td>
-<td><input class="hn" data-seq="${r.seq}" value="${esc(hostOf(r))}" placeholder="${esc(hnHint(r))}" title="${esc(alarmOf(r).slice(0, 300))}" aria-label="Hostname do ticket ${r.seq}"></td>
-<td class="risk${rk ? ' on' : ''}">${!hostOf(r) ? '—' : rk == null && r.pri === 'P1' && Object.keys(afet5).length ? '0' : rk == null ? '<span class="muted">' + (Object.keys(afet).length + Object.keys(afet5).length ? 'sem registro' : 'sem base') + '</span>' : rk.toLocaleString('pt-BR')}</td></tr>`
+<td>${statusCell(ms)}</td>
+<td><input class="hn" data-seq="${r.seq}" value="${esc(hostOf(r))}" placeholder="${esc(hnHint(r))}" aria-label="Hostname do ticket ${r.seq}"></td>
+<td class="risk${rk ? ' on' : ''}">${!hostOf(r) ? '—' : rk == null && PO[r.pri] > 2 ? '—' : rk == null && r.pri === 'P1' && Object.keys(afet5).length ? '0' : rk == null ? '<span class="muted">' + (Object.keys(afet).length + Object.keys(afet5).length ? 'sem registro' : 'sem base') + '</span>' : rk.toLocaleString('pt-BR')}</td></tr>`
     }).join('');
+    $('#more').hidden = list.length <= LIM; $('#more').textContent = 'Mostrando ' + LIM + ' de ' + list.length + ' tickets. Aumente o limite ou use os filtros.';
     $('#tb').querySelectorAll('.hn').forEach(i => i.onchange = () => { store.set('hn:' + i.dataset.seq, i.value.trim()); render() });
 }
 
@@ -134,7 +153,7 @@ setInterval(() => { if (document.activeElement && document.activeElement.classLi
 
 $('#q').oninput = e => { fq = norm(e.target.value); render() };
 $('#uf').onchange = e => { fuf = e.target.value; render() };
-$('#gr').onchange = e => { fgr = e.target.value; render() };
+$('#lim').value = String(LIM); $('#lim').onchange = e => { LIM = Math.min(100, Math.max(10, Number(e.target.value) || 50)); store.set('lim', LIM); render() };
 $('#theme').onclick = () => { const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches; r.dataset.theme = dark ? 'light' : 'dark' };
 
 $('#max').onclick = () => { const on = document.body.classList.toggle('max'); $('#max').textContent = on ? 'Restaurar tamanho' : 'Maximizar tabela'; $('#max').setAttribute('aria-pressed', on) };
@@ -144,7 +163,7 @@ $('#clear').onclick = () => {
     const b = $('#clear');
     if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = 'Confirmar limpeza?'; armT = setTimeout(() => { b.classList.remove('arm'); b.textContent = 'Limpar tabela' }, 3500); return }
     clearTimeout(armT); b.classList.remove('arm'); b.textContent = 'Limpar tabela';
-    rows = []; sbAlarme = {}; fp = fq = fuf = fgr = ''; $('#q').value = ''; $('#uf').value = ''; $('#gr').value = '';
+    rows = []; sbAlarme = {}; fp = fq = fuf = fgr = ''; $('#q').value = ''; $('#uf').value = '';
     $('#meta').textContent = 'Tabela vazia · importe uma nova planilha (.xlsx)'; render()
 };
 
@@ -301,5 +320,7 @@ $('#file').onchange = async e => {
     } catch (err) { $('#meta').textContent = 'Não consegui ler o arquivo: ' + err.message }
     e.target.value = '';
 };
+// mensagens de status (afetação, Supabase, importação) ficam escondidas; só aparecem quando há erro
+['#info', '#meta'].forEach(sel => new MutationObserver(() => $(sel).classList.toggle('err', /erro|não consegui|não carregou|nenhuma linha/i.test($(sel).textContent))).observe($(sel), { childList: true, characterData: true, subtree: true }));
 render();
 sbAfet();
