@@ -744,3 +744,8 @@ td.act {
     resize: vertical;
     min-height: 84px
 }
+
+a.file {
+    text-decoration: none;
+    display: inline-block
+}
