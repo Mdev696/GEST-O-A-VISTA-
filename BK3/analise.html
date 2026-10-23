@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>GRDD · Análise</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .sec {
+            font-size: 15px;
+            font-weight: 800;
+            margin: 26px 0 12px;
+            letter-spacing: .02em;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .sec::before {
+            content: "";
+            width: 4px;
+            height: 18px;
+            border-radius: 4px;
+            background: linear-gradient(var(--p2), var(--p3))
+        }
+
+        .ctx {
+            display: block !important;
+            margin-top: 6px
+        }
+
+        .aviso {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--p0);
+            color: var(--p0);
+            font-weight: 600;
+            margin-bottom: 14px
+        }
+
+        .sla {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--mt)
+        }
+
+        .sla input {
+            width: 64px;
+            font: inherit;
+            padding: 7px 8px;
+            border: 1px solid var(--ln);
+            border-radius: 10px;
+            background: var(--sf);
+            color: var(--tx)
+        }
+
+        .kpi3 {
+            grid-template-columns: repeat(3, 1fr)
+        }
+
+        .kpi4 {
+            grid-template-columns: repeat(4, 1fr)
+        }
+
+        .strip .kc {
+            background: var(--sf);
+            padding: 14px 16px;
+            position: relative
+        }
+
+        .strip .kc small {
+            display: block;
+            margin-top: 4px;
+            color: var(--mt);
+            font-size: 11px;
+            font-weight: 600
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: minmax(280px, 1fr) 2fr;
+            gap: 14px
+        }
+
+        .grid2b {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        .panel {
+            background: var(--sf);
+            border: 1px solid var(--ln);
+            border-radius: 14px;
+            padding: 16px;
+            min-width: 0
+        }
+
+        .panel h3 {
+            margin: 0 0 12px;
+            font-size: 13px;
+            color: var(--mt);
+            font-weight: 700;
+            letter-spacing: .03em;
+            text-transform: uppercase
+        }
+
+        /* rosca */
+        .donut {
+            display: grid;
+            place-items: center;
+            position: relative
+        }
+
+        .donut svg {
+            width: 100%;
+            max-width: 230px;
+            height: auto;
+            transform: rotate(-90deg)
+        }
+
+        .donut .seg {
+            fill: none;
+            stroke-linecap: round;
+            animation: grow .9s cubic-bezier(.2, .8, .2, 1) both
+        }
+
+        @keyframes grow {
+            from {
+                stroke-dasharray: 0 var(--c)
+            }
+        }
+
+        .donut .mid {
+            position: absolute;
+            text-align: center
+        }
+
+        .donut .mid b {
+            display: block;
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1
+        }
+
+        .donut .mid span {
+            font-size: 12px;
+            color: var(--mt);
+            font-weight: 600
+        }
+
+        .leg {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 14px;
+            margin-top: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mt);
+            justify-content: center
+        }
+
+        .leg i {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            margin-right: 6px;
+            vertical-align: -1px
+        }
+
+        /* colunas empilhadas */
+        .cols {
+            display: flex;
+            align-items: flex-end;
+            gap: 18px;
+            height: 230px;
+            padding: 8px 6px 0
+        }
+
+        .col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            min-width: 0
+        }
+
+        .col .tot {
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 6px
+        }
+
+        .col .stack {
+            width: 100%;
+            max-width: 86px;
+            display: flex;
+            flex-direction: column-reverse;
+            border-radius: 10px 10px 4px 4px;
+            overflow: hidden;
+            transition: height .8s cubic-bezier(.2, .8, .2, 1);
+            min-height: 0
+        }
+
+        .col .stack i {
+            display: block;
+            width: 100%;
+            min-height: 3px;
+            border-top: 1px solid color-mix(in srgb, var(--sf) 60%, transparent)
+        }
+
+        .col .lb {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--mt);
+            font-weight: 700;
+            white-space: nowrap
+        }
+
+        .col .sb {
+            font-size: 10px;
+            color: var(--mt);
+            font-weight: 600;
+            min-height: 14px
+        }
+
+        /* barras horizontais */
+        .hb {
+            display: grid;
+            grid-template-columns: 74px 1fr 84px;
+            align-items: center;
+            gap: 10px;
+            margin: 9px 0;
+            font-size: 13px
+        }
+
+        .hb .n {
+            font-weight: 800
+        }
+
+        .hb .tr {
+            height: 14px;
+            border-radius: 99px;
+            background: color-mix(in srgb, var(--ln) 70%, transparent);
+            overflow: hidden
+        }
+
+        .hb .tr i {
+            display: block;
+            height: 100%;
+            border-radius: 99px;
+            background: var(--c);
+            transition: width .9s cubic-bezier(.2, .8, .2, 1)
+        }
+
+        .hb b {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-weight: 800
+        }
+
+        .hb small {
+            color: var(--mt);
+            font-weight: 600
+        }
+
+        .tmr {
+            font-size: 44px;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(90deg, var(--p2), var(--p3));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-variant-numeric: tabular-nums
+        }
+
+        .formula {
+            margin-top: 10px;
+            color: var(--mt);
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.5
+        }
+
+        .vazio {
+            color: var(--mt);
+            padding: 18px 0;
+            text-align: center
+        }
+
+        table.res {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px
+        }
+
+        table.res th,
+        table.res td {
+            padding: 8px 7px;
+            border-bottom: 1px solid var(--ln);
+            text-align: right;
+            white-space: nowrap
+        }
+
+        table.res th:first-child,
+        table.res td:first-child {
+            text-align: left
+        }
+
+        table.res tfoot td {
+            font-weight: 800;
+            border-bottom: 0
+        }
+
+        .tw {
+            overflow-x: auto
+        }
+
+        .tw table th {
+            position: static
+        }
+
+        .tw table.lista td,
+        .tw table.lista th {
+            text-align: left
+        }
+
+        @media (max-width: 900px) {
+
+            .grid2,
+            .grid2b {
+                grid-template-columns: 1fr
+            }
+
+            .kpi4 {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        @media (max-width: 600px) {
+            .kpi3 {
+                grid-template-columns: 1fr
+            }
+        }
+
+        a.file {
+            text-decoration: none;
+            display: inline-block
+        }
+
+        .dchips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 4px
+        }
+
+        .dchips button[aria-pressed=true] {
+            background: var(--sf2);
+            box-shadow: inset 0 -3px 0 var(--p2)
+        }
+
+        .sla input[type=date] {
+            width: auto
+        }
+
+        tr.dia {
+            cursor: pointer
+        }
+
+        tr.dia:hover td {
+            background: var(--sf2)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <div>
+                <h1>GRDD</h1>
+                <div class="sub ctx" id="ctx">Carregando a base…</div>
+            </div>
+            <div class="btns">
+                <a class="file" href="index.html">← Painel</a>
+                <label class="sla">De <input id="de" type="date"></label>
+                <label class="sla">Até <input id="ate" type="date"></label>
+                <label class="sla" title="Prazo para considerar o ticket vencido (horas desde a criação)">Prazo (SLA)
+                    <input id="sla" type="number" min="0.5" step="0.5" value="4"> h</label>
+                <button id="reload" type="button">Atualizar base</button>
+            </div>
+        </header>
+
+        <div class="aviso" id="aviso" hidden></div>
+        <div class="dchips" id="dias"></div>
+
+        <h2 class="sec">1 · Quantos temos, vencidos e a vencer</h2>
+        <div class="strip kpi4" id="kpi"></div>
+        <div class="grid2">
+            <div class="panel">
+                <h3>Situação geral</h3>
+                <div id="donut"></div>
+            </div>
+            <div class="panel">
+                <h3>Por prioridade</h3>
+                <div class="tw" id="tprio"></div>
+            </div>
+        </div>
+
+        <h2 class="sec">Tudo que vai vencer · janelas de 6 horas</h2>
+        <div class="strip kpi4" id="win"></div>
+        <div class="grid2b">
+            <div class="panel">
+                <h3>A vencer por janela e prioridade</h3>
+                <div id="cols"></div>
+                <div class="leg" id="legp"></div>
+            </div>
+            <div class="panel">
+                <h3>Próximos vencimentos</h3>
+                <div class="tw" id="prox"></div>
+            </div>
+        </div>
+
+        <h2 class="sec">2 · TMR · tempo médio de reparo</h2>
+        <div class="grid2">
+            <div class="panel">
+                <h3>TMR dos fechados</h3>
+                <div class="tmr" id="tmr">—</div>
+                <div class="formula" id="formula"></div>
+                <div class="formula" id="tmrA"></div>
+            </div>
+            <div class="grid2b" style="gap:14px">
+                <div class="panel">
+                    <h3>TMR por prioridade (fechados)</h3>
+                    <div id="hbprio"></div>
+                </div>
+                <div class="panel">
+                    <h3>TMR por grupo (fechados)</h3>
+                    <div id="hbgrp"></div>
+                </div>
+            </div>
+        </div>
+        <h2 class="sec">Por data de criação</h2>
+        <div class="panel">
+            <div class="tw" id="pordia"></div>
+        </div>
+    </div>
+
+    <button id="theme" type="button" class="themefab" aria-label="Alternar tema claro/escuro" title="Alternar tema">
+        <svg class="ic-moon" viewBox="0 0 24 24">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+        </svg>
+        <svg class="ic-sun" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4" />
+            <path
+                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </svg>
+    </button>
+
+    <script>
+        const $ = s => document.querySelector(s);
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const H = 36e5;
+
+        // ---- conexão (a mesma do painel: o que estiver salvo no botão Supabase tem prioridade) ----
+        const SUPABASE_URL = 'https://fgcrdoyquvzihgnmvspf.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnY3Jkb3lxdXZ6aWhnbm12c3BmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNTY3NzksImV4cCI6MjEwNjYzMjc3OX0.V8hsgf52PlIjukEyQmhtwtjzN26Mv0OVePEwkjXwtS0';
+        const mem = {};
+        const store = {
+            get(k) { try { return localStorage.getItem(k) } catch (e) { return mem[k] || null } },
+            set(k, v) { try { localStorage.setItem(k, v) } catch (e) { mem[k] = v } }
+        };
+        const cfg = () => ({ url: (store.get('sb_url') || SUPABASE_URL).replace(/\/+$/, ''), key: store.get('sb_key') || SUPABASE_KEY });
+
+        // ---- regras ----
+        let SLA = Number(store.get('sla_h')) > 0 ? Number(store.get('sla_h')) : 4;   // horas desde a criação; passou disso = vencido
+        const JAN = ['00:00 – 06:00', '06:00 – 12:00', '12:00 – 18:00', '18:00 – 00:00'];
+        const PRI = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5'];
+        const pcol = p => PRI.includes(p) ? `var(--${p.toLowerCase()})` : 'var(--mt)';
+        const GRP = ['PI', 'RE', 'SWAP'];
+        const gcol = { PI: 'var(--g2)', RE: 'var(--g1)', SWAP: 'var(--p2)', Outros: 'var(--g3)' };
+        const n0 = v => Number(v).toLocaleString('pt-BR');
+        const n1 = v => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const pad = v => String(v).padStart(2, '0');
+        function fmtH(h) { const m = Math.max(0, Math.round(h * 60)); return Math.floor(m / 1440) + 'd ' + pad(Math.floor(m % 1440 / 60)) + ':' + pad(m % 60) }
+        const hhmm = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+        const quando = d => new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const dia0 = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x };
+
+        let todas = [], diaSel = '', info = '';   // todas = tickets de TODAS as bases do período, sem repetir a Sequência
+        const dkey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+        const dtxt = k => k.slice(8) + '/' + k.slice(5, 7);
+        async function sb(path) { const { url, key } = cfg(); const res = await fetch(`${url}/rest/v1/${path}`, { headers: { apikey: key, Authorization: 'Bearer ' + key } }); if (!res.ok) throw new Error('HTTP ' + res.status); return res.json() }
+
+        // ---- carrega todas as bases do período e cruza com a fechamos_historico (pela Sequência) para achar a data de encerramento ----
+        async function carregar() {
+            const { url, key } = cfg(); $('#aviso').hidden = true;
+            if (!url || !key) { erro('Supabase não configurado. Abra o painel, clique em Supabase e salve a URL e a chave.'); return }
+            try {
+                const de = new Date($('#de').value + 'T00:00:00').toISOString(), ate = new Date($('#ate').value + 'T23:59:59').toISOString();
+                const lista = await sb(`bases_importadas?select=id,importado_em&importado_em=gte.${de}&importado_em=lte.${ate}&order=importado_em.asc`);
+                if (!lista.length) { todas = []; info = ''; erro('Nenhuma base guardada neste período.'); render(); return }
+                const mapa = new Map(); let ultimos = new Set();
+                for (let k = 0; k < lista.length; k++) {
+                    $('#ctx').textContent = `Carregando bases ${k + 1}/${lista.length}…`;
+                    const [b] = await sb(`bases_importadas?id=eq.${lista[k].id}&select=tickets`);
+                    const ts = (b && b.tickets) || [];
+                    ts.forEach(t => { const c = new Date(t.criacao); if (!isNaN(c)) mapa.set(Number(t.seq), { ...t, seq: Number(t.seq), criacao: c }) });   // a base mais nova sobrescreve
+                    if (k === lista.length - 1) ultimos = new Set(ts.map(t => Number(t.seq)));
+                }
+                const fech = new Map();
+                try {
+                    const minC = new Date(Math.min(...[...mapa.values()].map(t => +t.criacao))).toISOString();
+                    for (let o = 0; ; o += 1000) {
+                        const p = await sb(`fechamos_historico?select=sequencia,data_criacao,data_encerramento&data_encerramento=gte.${minC}&order=sequencia&limit=1000&offset=${o}`);
+                        p.forEach(x => { if (x.data_encerramento && mapa.has(Number(x.sequencia))) fech.set(Number(x.sequencia), x) });
+                        if (p.length < 1000) break;
+                    }
+                } catch (err) { erro('Não consegui ler a fechamos_historico (' + err.message + '). Os fechados não entram na conta.') }
+                todas = [...mapa.values()].map(t => {
+                    const f = fech.get(t.seq);
+                    if (f) { const enc = new Date(f.data_encerramento), cri = f.data_criacao ? new Date(f.data_criacao) : t.criacao; return { ...t, estado: 'fechado', enc, dur: Math.max(0, (enc - cri) / H) } }
+                    return { ...t, estado: ultimos.has(t.seq) ? 'aberto' : 'sumiu' };
+                });
+                info = `${lista.length} bases (${dtxt(dkey(new Date(lista[0].importado_em)))} a ${dtxt(dkey(new Date(lista[lista.length - 1].importado_em)))})`;
+            } catch (err) { todas = []; erro('Não consegui carregar as bases (' + err.message + '). Confira a conexão e se a tabela bases_importadas existe.') }
+            render();
+        }
+        function erro(msg) { const av = $('#aviso'); av.textContent = msg; av.hidden = false }
+
+        // ---- cálculo ----
+        function calcular(ref) {
+            const L = todas.filter(t => !diaSel || dkey(t.criacao) === diaSel);
+            const ab = L.filter(t => t.estado === 'aberto').map(t => { const el = Math.max(0, (ref - t.criacao) / H); return { ...t, el, due: new Date(+t.criacao + SLA * H), venc: el > SLA } });
+            const fe = L.filter(t => t.estado === 'fechado'), su = L.filter(t => t.estado === 'sumiu');
+            const venc = ab.filter(t => t.venc), aven = ab.filter(t => !t.venc), dentro = fe.filter(t => t.dur <= SLA);
+            const hoje = +dia0(ref), wins = JAN.map((nome, i) => ({ nome, i, lista: [], hoje: 0, depois: 0, pri: {} }));
+            aven.forEach(t => { const w = wins[Math.floor(t.due.getHours() / 6)]; w.lista.push(t); (+dia0(t.due) === hoje) ? w.hoje++ : w.depois++; w.pri[t.pri] = (w.pri[t.pri] || 0) + 1 });
+            const sA = ab.reduce((x, t) => x + t.el, 0), sF = fe.reduce((x, t) => x + t.dur, 0);
+            return { L, ab, fe, su, venc, aven, dentro, wins, sA, sF, tmrA: ab.length ? sA / ab.length : 0, tmrF: fe.length ? sF / fe.length : 0 };
+        }
+
+        // ---- gráficos ----
+        function donut(parts, total) {
+            const R = 70, S = 24, C = 2 * Math.PI * R, tt = total || 1; let off = 0;
+            const segs = parts.map(p => { const s = p.v > 0 ? `<circle class="seg" cx="100" cy="100" r="${R}" stroke="${p.c}" stroke-width="${S}" style="--c:${C.toFixed(2)};stroke-dasharray:${Math.max(0, p.v / tt * C - 3).toFixed(2)} ${C.toFixed(2)};stroke-dashoffset:${(-off / tt * C).toFixed(2)}"/>` : ''; off += p.v; return s }).join('');
+            return `<div class="donut"><svg viewBox="0 0 200 200" role="img" aria-label="${parts.map(p => p.n + ' ' + p.v).join(', ')}"><circle cx="100" cy="100" r="${R}" fill="none" stroke="var(--ln)" stroke-width="${S}" opacity=".5"/>${segs}</svg><div class="mid"><b>${n0(total)}</b><span>tickets</span></div></div>
+<div class="leg">${parts.map(p => `<span><i style="background:${p.c}"></i>${p.n} ${n0(p.v)}</span>`).join('')}</div>`;
+        }
+        function colunas(wins) {
+            const max = Math.max(1, ...wins.map(w => w.lista.length));
+            return `<div class="cols">` + wins.map(w => {
+                const tot = w.lista.length, h = tot ? Math.max(6, tot / max * 100) : 0;
+                const segs = PRI.concat(Object.keys(w.pri).filter(p => !PRI.includes(p))).filter(p => w.pri[p]).map(p => `<i style="flex:${w.pri[p]};background:${pcol(p)}" title="${esc(p)}: ${w.pri[p]}"></i>`).join('');
+                const sub = tot ? (w.depois ? `${w.hoje} hoje · ${w.depois} depois` : 'hoje') : '';
+                return `<div class="col"><div class="tot">${n0(tot)}</div><div class="stack" style="height:${h * .78}%">${segs}</div><div class="lb">${w.nome}</div><div class="sb">${sub}</div></div>`;
+            }).join('') + `</div>`;
+        }
+        function barras(itens, fmt) {
+            const max = Math.max(...itens.map(i => i.v), 0.0001);
+            return itens.map(i => `<div class="hb" style="--c:${i.c}"><span class="n">${esc(i.n)}</span><div class="tr"><i style="width:${(i.v / max * 100).toFixed(1)}%"></i></div><b>${fmt(i.v)}<br><small>${n0(i.q)} TA${i.q === 1 ? '' : 's'}</small></b></div>`).join('') || '<div class="vazio">Sem dados.</div>';
+        }
+
+        // ---- tela ----
+        function render() {
+            const ref = Date.now(), r = calcular(ref), tot = r.L.length;
+            $('#ctx').textContent = todas.length ? `${info} · ${n0(todas.length)} tickets únicos · ${n0(todas.filter(t => t.estado === 'fechado').length)} fechados (fechamos_historico)${diaSel ? ' · criados em ' + dtxt(diaSel) : ''} · calculado às ${hhmm(new Date(ref))} · prazo de ${n1(SLA)} h` : 'Sem bases carregadas.';
+            const pc = (v, t) => t ? (v / t * 100).toFixed(0) + '%' : '0%';
+            $('#kpi').innerHTML =
+                `<div class="kc" style="--c:var(--tx)"><b>${n0(tot)}</b><span>Temos (tickets únicos)</span><small>${n0(r.ab.length)} abertos · ${n0(r.fe.length)} fechados${r.su.length ? ' · ' + n0(r.su.length) + ' sem situação' : ''}</small></div>` +
+                `<div class="kc" style="--c:var(--st-crit)"><b>${n0(r.venc.length)}</b><span>Vencidos (abertos)</span><small>${pc(r.venc.length, r.ab.length)} dos abertos · passaram de ${n1(SLA)} h</small></div>` +
+                `<div class="kc" style="--c:var(--st-ok)"><b>${n0(r.aven.length)}</b><span>A vencer (abertos)</span><small>${pc(r.aven.length, r.ab.length)} dos abertos · dentro do prazo</small></div>` +
+                `<div class="kc" style="--c:var(--p2)"><b>${n0(r.fe.length)}</b><span>Fechados</span><small>${n0(r.dentro.length)} no prazo · ${n0(r.fe.length - r.dentro.length)} fora do prazo</small></div>`;
+            $('#donut').innerHTML = donut([{ n: 'Vencidos', v: r.venc.length, c: 'var(--st-crit)' }, { n: 'A vencer', v: r.aven.length, c: 'var(--st-ok)' }, { n: 'Fechados', v: r.fe.length, c: 'var(--p2)' }, { n: 'Sem situação', v: r.su.length, c: 'var(--g3)' }], tot);
+
+            const pris = PRI.concat([...new Set(r.L.map(t => t.pri))].filter(p => p && !PRI.includes(p)));
+            const lin = pris.map(p => { const x = r.L.filter(t => t.pri === p); return { p, t: x.length, v: r.venc.filter(t => t.pri === p).length, a: r.aven.filter(t => t.pri === p).length, f: x.filter(t => t.estado === 'fechado').length } }).filter(l => l.t);
+            $('#tprio').innerHTML = lin.length ? `<table class="res"><thead><tr><th>Prioridade</th><th>Total</th><th>Vencidos</th><th>A vencer</th><th>Fechados</th></tr></thead><tbody>` +
+                lin.map(l => `<tr><td><span class="chip" style="--c:${pcol(l.p)}">${esc(l.p)}</span></td><td>${n0(l.t)}</td><td style="color:var(--st-crit);font-weight:800">${n0(l.v)}</td><td style="color:var(--st-ok);font-weight:800">${n0(l.a)}</td><td style="color:var(--p2);font-weight:800">${n0(l.f)}</td></tr>`).join('') +
+                `</tbody><tfoot><tr><td>Total</td><td>${n0(tot)}</td><td>${n0(r.venc.length)}</td><td>${n0(r.aven.length)}</td><td>${n0(r.fe.length)}</td></tr></tfoot></table>` : '<div class="vazio">Sem tickets no período.</div>';
+
+            $('#win').innerHTML = r.wins.map(w => `<div class="kc" style="--c:var(--p2)"><b>${n0(w.lista.length)}</b><span>${w.nome}</span><small>${w.lista.length ? (w.depois ? `${w.hoje} hoje · ${w.depois} depois` : 'vencem hoje') : 'nada vence nesta janela'}</small></div>`).join('');
+            $('#cols').innerHTML = colunas(r.wins);
+            $('#legp').innerHTML = pris.filter(p => r.aven.some(t => t.pri === p)).map(p => `<span><i style="background:${pcol(p)}"></i>${esc(p)}</span>`).join('');
+            const prox = r.aven.slice().sort((x, y) => x.due - y.due).slice(0, 25);
+            $('#prox').innerHTML = prox.length ? `<table class="res lista"><thead><tr><th>Vence</th><th>Janela</th><th>Sequência</th><th>Prior.</th><th>Grupo</th><th>Localidade</th><th>Falta</th></tr></thead><tbody>` +
+                prox.map(t => { const dd = +dia0(t.due) === +dia0(ref) ? 'hoje' : 'depois', falta = (t.due - ref) / 6e4; return `<tr><td>${hhmm(t.due)} <small class="muted">${dd}</small></td><td>${JAN[Math.floor(t.due.getHours() / 6)]}</td><td>${esc(t.seq)}</td><td><span class="chip" style="--c:${pcol(t.pri)}">${esc(t.pri)}</span></td><td>${esc(t.grupo)}</td><td>${esc(t.loc)}</td><td>${falta >= 60 ? Math.floor(falta / 60) + 'h ' + pad(Math.round(falta % 60)) + 'min' : Math.round(falta) + ' min'}</td></tr>` }).join('') +
+                `</tbody></table>` + (r.aven.length > prox.length ? `<div class="sub" style="margin-top:8px">Mostrando os ${prox.length} primeiros de ${r.aven.length} a vencer.</div>` : '') : '<div class="vazio">Nenhum ticket aberto a vencer.</div>';
+
+            $('#tmr').textContent = r.fe.length ? fmtH(r.tmrF) : '—';
+            $('#formula').innerHTML = r.fe.length ? `Soma de todas as horas: <b>${n1(r.sF)} h</b> ÷ <b>${n0(r.fe.length)}</b> TAs fechados = <b>${n1(r.tmrF)} h</b> por TA<br>Horas de cada TA = encerramento − criação (data de encerramento vinda da fechamos_historico).` : 'Nenhum ticket fechado no período (não achei a Sequência na fechamos_historico).';
+            $('#tmrA').innerHTML = r.ab.length ? `Em aberto: tempo médio decorrido <b>${fmtH(r.tmrA)}</b> (${n1(r.sA)} h ÷ ${n0(r.ab.length)} TAs)` : '';
+            const media = (arr, f) => arr.reduce((x, t) => x + f(t), 0) / arr.length;
+            $('#hbprio').innerHTML = barras(lin.map(l => ({ n: l.p, c: pcol(l.p), x: r.fe.filter(t => t.pri === l.p) })).filter(i => i.x.length).map(i => ({ n: i.n, c: i.c, v: media(i.x, t => t.dur), q: i.x.length })), fmtH);
+            const g = t => GRP.includes(t.grupo) ? t.grupo : 'Outros';
+            $('#hbgrp').innerHTML = barras(GRP.concat('Outros').map(n => ({ n, x: r.fe.filter(t => g(t) === n) })).filter(i => i.x.length).map(i => ({ n: i.n, c: gcol[i.n], v: media(i.x, t => t.dur), q: i.x.length })), fmtH);
+
+            // separação por data de criação (clique para filtrar o dia)
+            const dias = [...new Set(todas.map(t => dkey(t.criacao)))].sort().reverse();
+            $('#dias').innerHTML = todas.length ? [['', 'Todos os dias']].concat(dias.map(d => [d, dtxt(d)])).map(([k, l]) => `<button type="button" data-d="${k}" aria-pressed="${diaSel === k}">${l}</button>`).join('') : '';
+            $('#dias').querySelectorAll('button').forEach(b => b.onclick = () => { diaSel = b.dataset.d; render() });
+            $('#pordia').innerHTML = dias.length ? `<table class="res"><thead><tr><th>Criados em</th><th>Total</th><th>Abertos</th><th>Vencidos</th><th>Fechados</th><th>TMR (fechados)</th></tr></thead><tbody>` + dias.map(d => {
+                const x = todas.filter(t => dkey(t.criacao) === d), ab = x.filter(t => t.estado === 'aberto'), fe = x.filter(t => t.estado === 'fechado'), vv = ab.filter(t => (ref - t.criacao) / H > SLA).length;
+                return `<tr class="dia" data-d="${d}"><td>${dtxt(d)}</td><td>${n0(x.length)}</td><td>${n0(ab.length)}</td><td style="color:var(--st-crit);font-weight:800">${n0(vv)}</td><td>${n0(fe.length)}</td><td>${fe.length ? fmtH(media(fe, t => t.dur)) : '—'}</td></tr>`
+            }).join('') + `</tbody></table>` : '<div class="vazio">Sem dados.</div>';
+            $('#pordia').querySelectorAll('tr.dia').forEach(tr => tr.onclick = () => { diaSel = tr.dataset.d; render(); scrollTo({ top: 0, behavior: 'smooth' }) });
+        }
+
+        // ---- controles ----
+        $('#sla').value = String(SLA);
+        $('#sla').onchange = e => { const v = Number(e.target.value); if (v > 0) { SLA = v; store.set('sla_h', v); render() } else e.target.value = String(SLA) };
+        $('#de').value = dkey(new Date(Date.now() - 6 * 864e5)); $('#ate').value = dkey(new Date());   // padrão: últimos 7 dias
+        $('#de').onchange = $('#ate').onchange = carregar;
+        $('#reload').onclick = carregar;
+        const tema = store.get('tema'); if (tema) document.documentElement.dataset.theme = tema;
+        $('#theme').onclick = () => { const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; store.set('tema', r.dataset.theme) };
+        setInterval(() => todas.length && render(), 60000);     // o tempo passa: recalcula a cada minuto
+        setInterval(carregar, 5 * 60000);                // e busca a base de novo a cada 5 minutos
+        render();
+        carregar();
+    </script>
+</body>
+
+</html>
