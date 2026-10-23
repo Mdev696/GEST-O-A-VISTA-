@@ -749,3 +749,11 @@ a.file {
     text-decoration: none;
     display: inline-block
 }
+
+.strip b .pc {
+    font-style: normal;
+    font-size: 13px;
+    font-weight: 800;
+    margin-left: 8px;
+    color: var(--mt)
+}

@@ -111,11 +111,14 @@ $('#notasAdd').onclick = addNota;
 $('#notasClose').onclick = () => $('#notas').close();
 $('#notasTxt').onkeydown = e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); addNota() } };
 
+// percentual de um número dentro do total do seu bloco de cartões
+const pct = (n, t) => { if (!t) return '0%'; const p = n / t * 100; return (p > 0 && p < 1 ? '&lt;1' : Math.round(p)) + '%' };
+
 function strip() {
     // cartões de prioridade: sempre mostram o total (não mudam quando se seleciona um grupo)
     const c = p => rows.filter(r => r.pri === p).length;
     const items = [['', 'Total', rows.length, ''], ['P0', 'P0', c('P0'), 'var(--p0)'], ['P1', 'P1', c('P1'), 'var(--p1)'], ['P2', 'P2', c('P2'), 'var(--p2)'], ['P3', 'P3', c('P3'), 'var(--p3)'], ['P4', 'P4', c('P4'), 'var(--p4)'], ['P5', 'P5', c('P5'), 'var(--p5)'], ['+24h', 'Aging +24h', rows.filter(r => r.aging === '+24h').length, 'var(--tx)']];
-    $('#strip').innerHTML = items.map(([k, l, n, col]) => `<button type="button" data-k="${k}" aria-pressed="${fp === k}" style="--c:${col || 'var(--tx)'}"><b>${n}</b><span>${l}</span></button>`).join('');
+    $('#strip').innerHTML = items.map(([k, l, n, col]) => `<button type="button" data-k="${k}" aria-pressed="${fp === k}" style="--c:${col || 'var(--tx)'}"><b>${n}<i class="pc">${pct(n, rows.length)}</i></b><span>${l}</span></button>`).join('');
     $('#strip').querySelectorAll('button').forEach(b => b.onclick = () => { fp = (fp === b.dataset.k) ? '' : b.dataset.k; render() });
 }
 
@@ -124,7 +127,7 @@ function strip2() {
     // cartões de grupo: se uma prioridade (ou o Aging +24h) estiver selecionada, contam só os tickets dela
     const base = rows.filter(r => fp === '+24h' ? r.aging === '+24h' : (!fp || r.pri === fp));
     const c = g => base.filter(r => r.grupo === g).length;
-    $('#strip2').innerHTML = ['PI', 'RE', 'SWAP'].map(g => `<button type="button" data-g="${g}" aria-pressed="${fgr === g}" style="--c:${gcol(g)}"><b>${c(g)}</b><span>${g}</span></button>`).join('');
+    $('#strip2').innerHTML = ['PI', 'RE', 'SWAP'].map(g => `<button type="button" data-g="${g}" aria-pressed="${fgr === g}" style="--c:${gcol(g)}"><b>${c(g)}<i class="pc">${pct(c(g), base.length)}</i></b><span>${g}</span></button>`).join('');
     $('#strip2').querySelectorAll('button').forEach(b => b.onclick = () => { fgr = (fgr === b.dataset.g) ? '' : b.dataset.g; render() });
 }
 
