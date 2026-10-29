@@ -381,124 +381,122 @@
             background: var(--sf2)
         }
 
-        /* ---- relatório completo (modal) ---- */
-        .sec .rep {
-            margin-left: auto
-        }
-
-        button.rep {
-            padding: 5px 10px;
-            font-size: 12px
-        }
-
-        .ph {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 12px
-        }
-
-        .ph h3 {
-            margin: 0
-        }
-
-        .strip .kc[data-rep],
-        .hb[data-rep],
-        tr.clk {
+        .cl {
             cursor: pointer
         }
 
-        .strip .kc[data-rep]:hover,
-        tr.clk:hover td {
+        .strip .kc.cl:hover,
+        tr.cl:hover td,
+        .hb.cl:hover {
             background: var(--sf2)
         }
 
-        .hb[data-rep]:hover .n {
-            text-decoration: underline
+        .hb.cl {
+            border-radius: 8px;
+            padding: 2px 6px;
+            margin-left: -6px;
+            margin-right: -6px
         }
 
-        #rel {
-            max-width: 1240px;
-            width: 96%;
-            padding: 0;
-            overflow: hidden
+        #det {
+            max-width: 1000px;
+            width: 94vw;
+            max-height: 88vh;
+            overflow: auto;
+            padding: 0
         }
 
-        #rel .rin {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 18px 20px;
-            max-height: 92vh
-        }
-
-        #rel .rh {
+        #det .dh {
+            position: sticky;
+            top: 0;
+            z-index: 2;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 12px
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--sf);
+            border-bottom: 1px solid var(--ln)
         }
 
-        #rel h2 {
+        #det .dh h2 {
             margin: 0;
             font-size: 18px
         }
 
-        .rsum {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px
+        #det .dbody {
+            padding: 16px 20px 20px
         }
 
-        .rc {
-            display: inline-flex;
-            align-items: baseline;
-            gap: 6px;
-            padding: 6px 12px;
+        .dexp {
+            background: color-mix(in srgb, var(--p2) 8%, var(--sf));
             border: 1px solid var(--ln);
-            border-radius: 999px;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.6
+        }
+
+        .dexp p {
+            margin: 0 0 8px
+        }
+
+        .dexp p:last-child {
+            margin: 0
+        }
+
+        .dkpi {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin: 14px 0
+        }
+
+        .dkpi div {
             background: var(--sf2);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--mt)
+            border: 1px solid var(--ln);
+            border-radius: 12px;
+            padding: 10px 12px
         }
 
-        .rc b {
-            font-size: 16px;
+        .dkpi b {
+            display: block;
+            font-size: 22px;
             font-weight: 800;
-            color: var(--c, var(--tx))
+            color: var(--c);
+            font-variant-numeric: tabular-nums
         }
 
-        .rbar {
+        .dkpi span {
+            font-size: 11px;
+            color: var(--mt);
+            font-weight: 600
+        }
+
+        .dtabs {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px
+            gap: 8px;
+            margin: 0 0 10px
         }
 
-        .rbar input {
-            flex: 1;
-            min-width: 200px;
-            margin: 0;
-            padding: 8px 12px;
-            border-radius: 10px
+        .dtabs button[aria-pressed=true] {
+            background: var(--sf2);
+            box-shadow: inset 0 -3px 0 var(--p2)
         }
 
-        #relTw {
-            flex: 1;
-            min-height: 0;
+        #dlista {
+            max-height: 44vh;
             overflow: auto;
             border: 1px solid var(--ln);
             border-radius: 12px
         }
 
-        #relTw table th {
+        #dlista table th {
             position: sticky;
             top: 0;
-            z-index: 1;
             background: var(--sf2);
-            cursor: pointer;
-            user-select: none
+            z-index: 1
         }
     </style>
 </head>
@@ -522,10 +520,10 @@
 
         <div class="aviso" id="aviso" hidden></div>
         <div class="dchips" id="dias"></div>
+        <div class="sub" style="display:block;margin:2px 0 0">Dica: clique nos cartões, nas linhas das tabelas e nas
+            barras para abrir o detalhe, com a explicação e a lista de tickets.</div>
 
-        <h2 class="sec">1 · Quantos temos, vencidos e a vencer
-            <button type="button" class="rep" data-rep="todos">Relatório completo</button>
-        </h2>
+        <h2 class="sec">1 · Quantos temos, vencidos e a vencer</h2>
         <div class="strip kpi4" id="kpi"></div>
         <div class="grid2">
             <div class="panel">
@@ -533,17 +531,12 @@
                 <div id="donut"></div>
             </div>
             <div class="panel">
-                <div class="ph">
-                    <h3>Por prioridade</h3>
-                    <button type="button" class="rep" data-rep="prio">Relatório completo</button>
-                </div>
+                <h3>Por prioridade</h3>
                 <div class="tw" id="tprio"></div>
             </div>
         </div>
 
-        <h2 class="sec">Tudo que vai vencer · janelas de 6 horas
-            <button type="button" class="rep" data-rep="janelas">Relatório completo</button>
-        </h2>
+        <h2 class="sec">Tudo que vai vencer · janelas de 6 horas</h2>
         <div class="strip kpi4" id="win"></div>
         <div class="grid2b">
             <div class="panel">
@@ -557,9 +550,7 @@
             </div>
         </div>
 
-        <h2 class="sec">2 · TMR · tempo médio de reparo
-            <button type="button" class="rep" data-rep="tmr">Relatório completo</button>
-        </h2>
+        <h2 class="sec">2 · TMR · tempo médio de reparo</h2>
         <div class="grid2">
             <div class="panel">
                 <h3>TMR dos fechados</h3>
@@ -569,17 +560,11 @@
             </div>
             <div class="grid2b" style="gap:14px">
                 <div class="panel">
-                    <div class="ph">
-                        <h3>TMR por prioridade (fechados)</h3>
-                        <button type="button" class="rep" data-rep="tmrprio">Relatório completo</button>
-                    </div>
+                    <h3>TMR por prioridade (fechados)</h3>
                     <div id="hbprio"></div>
                 </div>
                 <div class="panel">
-                    <div class="ph">
-                        <h3>TMR por grupo (fechados)</h3>
-                        <button type="button" class="rep" data-rep="tmrgrp">Relatório completo</button>
-                    </div>
+                    <h3>TMR por grupo (fechados)</h3>
                     <div id="hbgrp"></div>
                 </div>
             </div>
@@ -590,26 +575,21 @@
         </div>
     </div>
 
-    <dialog id="rel">
-        <div class="rin">
-            <div class="rh">
-                <div>
-                    <h2 id="relTit">Relatório</h2>
-                    <div class="sub" id="relSub"></div>
-                </div>
-                <button id="relX" type="button">Fechar</button>
-            </div>
-            <div class="rsum" id="relSum"></div>
-            <div class="rbar">
-                <input id="relQ" type="search"
-                    placeholder="Filtrar neste relatório (sequência, localidade, site, grupo…)">
-                <button id="relCsv" type="button">Exportar CSV</button>
-            </div>
-            <div class="sub" id="relNota"></div>
-            <div class="tw" id="relTw"></div>
+    <dialog id="det">
+        <div class="dh">
+            <div>
+                <h2 id="dtit"></h2>
+                <div class="sub" id="dsub"></div>
+            </div><button id="dfecha" type="button">Fechar ✕</button>
+        </div>
+        <div class="dbody">
+            <div class="dexp" id="dexp"></div>
+            <div class="dkpi" id="dkpi"></div>
+            <div class="dtabs" id="dtabs"></div>
+            <div id="dlista"></div>
+            <div id="dact" style="margin-top:12px"></div>
         </div>
     </dialog>
-
     <button id="theme" type="button" class="themefab" aria-label="Alternar tema claro/escuro" title="Alternar tema">
         <svg class="ic-moon" viewBox="0 0 24 24">
             <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
@@ -643,7 +623,6 @@
         const pcol = p => PRI.includes(p) ? `var(--${p.toLowerCase()})` : 'var(--mt)';
         const GRP = ['PI', 'RE', 'SWAP'];
         const gcol = { PI: 'var(--g2)', RE: 'var(--g1)', SWAP: 'var(--p2)', Outros: 'var(--g3)' };
-        const grpOf = t => GRP.includes(t.grupo) ? t.grupo : 'Outros';
         const n0 = v => Number(v).toLocaleString('pt-BR');
         const n1 = v => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         const pad = v => String(v).padStart(2, '0');
@@ -652,8 +631,7 @@
         const quando = d => new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
         const dia0 = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x };
 
-        let todas = [], diaSel = '', info = '';   // todas = tickets de TODAS as bases do período, sem repetir a Sequência
-        let ult = null, rel = null;               // ult = último cálculo | rel = relatório aberto no modal
+        let todas = [], diaSel = '', info = '', ult = null;   // ult = último cálculo (usado pelos modais)   // todas = tickets de TODAS as bases do período, sem repetir a Sequência
         const dkey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
         const dtxt = k => k.slice(8) + '/' + k.slice(5, 7);
         async function sb(path) { const { url, key } = cfg(); const res = await fetch(`${url}/rest/v1/${path}`, { headers: { apikey: key, Authorization: 'Bearer ' + key } }); if (!res.ok) throw new Error('HTTP ' + res.status); return res.json() }
@@ -695,13 +673,13 @@
         function erro(msg) { const av = $('#aviso'); av.textContent = msg; av.hidden = false }
 
         // ---- cálculo ----
+        function enriquecer(t, ref) {   // abertos ganham idade (el), vencimento (due) e se já venceram (venc)
+            if (t.estado !== 'aberto') return t;
+            const el = Math.max(0, (ref - t.criacao) / H);
+            return { ...t, el, due: new Date(+t.criacao + SLA * H), venc: el > SLA };
+        }
         function calcular(ref) {
-            // tickets abertos já saem com tempo decorrido (el), prazo (due) e se venceu (venc)
-            const L = todas.filter(t => !diaSel || dkey(t.criacao) === diaSel).map(t => {
-                if (t.estado !== 'aberto') return t;
-                const el = Math.max(0, (ref - t.criacao) / H);
-                return { ...t, el, due: new Date(+t.criacao + SLA * H), venc: el > SLA };
-            });
+            const L = todas.filter(t => !diaSel || dkey(t.criacao) === diaSel).map(t => enriquecer(t, ref));
             const ab = L.filter(t => t.estado === 'aberto'), fe = L.filter(t => t.estado === 'fechado'), su = L.filter(t => t.estado === 'sumiu');
             const venc = ab.filter(t => t.venc), aven = ab.filter(t => !t.venc), dentro = fe.filter(t => t.dur <= SLA);
             const hoje = +dia0(ref), wins = JAN.map((nome, i) => ({ nome, i, lista: [], hoje: 0, depois: 0, pri: {} }));
@@ -726,146 +704,126 @@
                 return `<div class="col"><div class="tot">${n0(tot)}</div><div class="stack" style="height:${h * .78}%">${segs}</div><div class="lb">${w.nome}</div><div class="sb">${sub}</div></div>`;
             }).join('') + `</div>`;
         }
-        // rep = tipo de relatório que abre ao clicar na barra (o nome da barra vai como parâmetro)
-        function barras(itens, fmt, rep) {
+        function barras(itens, fmt) {
             const max = Math.max(...itens.map(i => i.v), 0.0001);
-            return itens.map(i => `<div class="hb" style="--c:${i.c}" data-rep="${rep}" data-p="${esc(i.n)}" role="button" tabindex="0" title="Abrir relatório de ${esc(i.n)}"><span class="n">${esc(i.n)}</span><div class="tr"><i style="width:${(i.v / max * 100).toFixed(1)}%"></i></div><b>${fmt(i.v)}<br><small>${n0(i.q)} TA${i.q === 1 ? '' : 's'}</small></b></div>`).join('') || '<div class="vazio">Sem dados.</div>';
+            return itens.map(i => `<div class="hb cl" data-n="${esc(i.n)}" tabindex="0" title="Clique para ver como o TMR foi calculado" style="--c:${i.c}"><span class="n">${esc(i.n)}</span><div class="tr"><i style="width:${(i.v / max * 100).toFixed(1)}%"></i></div><b>${fmt(i.v)}<br><small>${n0(i.q)} TA${i.q === 1 ? '' : 's'}</small></b></div>`).join('') || '<div class="vazio">Sem dados.</div>';
         }
 
         // ---- tela ----
         function render() {
-            const ref = Date.now(), r = calcular(ref), tot = r.L.length; ult = r;
+            const ref = Date.now(), r = calcular(ref), tot = r.L.length;
+            ult = { r, ref };
             $('#ctx').textContent = todas.length ? `${info} · ${n0(todas.length)} tickets únicos · ${n0(todas.filter(t => t.estado === 'fechado').length)} fechados (fechamos_historico)${diaSel ? ' · criados em ' + dtxt(diaSel) : ''} · calculado às ${hhmm(new Date(ref))} · prazo de ${n1(SLA)} h` : 'Sem bases carregadas.';
             const pc = (v, t) => t ? (v / t * 100).toFixed(0) + '%' : '0%';
-            const kc = (rep, cor, n, tit, sub) => `<div class="kc" data-rep="${rep}" role="button" tabindex="0" title="Abrir relatório completo" style="--c:${cor}"><b>${n0(n)}</b><span>${tit}</span><small>${sub}</small></div>`;
             $('#kpi').innerHTML =
-                kc('todos', 'var(--tx)', tot, 'Temos (tickets únicos)', `${n0(r.ab.length)} abertos · ${n0(r.fe.length)} fechados${r.su.length ? ' · ' + n0(r.su.length) + ' sem situação' : ''}`) +
-                kc('venc', 'var(--st-crit)', r.venc.length, 'Vencidos (abertos)', `${pc(r.venc.length, r.ab.length)} dos abertos · passaram de ${n1(SLA)} h`) +
-                kc('aven', 'var(--st-ok)', r.aven.length, 'A vencer (abertos)', `${pc(r.aven.length, r.ab.length)} dos abertos · dentro do prazo`) +
-                kc('fech', 'var(--p2)', r.fe.length, 'Fechados', `${n0(r.dentro.length)} no prazo · ${n0(r.fe.length - r.dentro.length)} fora do prazo`);
+                `<div class="kc cl" data-k="tot" tabindex="0" title="Clique para ver o detalhe" style="--c:var(--tx)"><b>${n0(tot)}</b><span>Temos (tickets únicos)</span><small>${n0(r.ab.length)} abertos · ${n0(r.fe.length)} fechados${r.su.length ? ' · ' + n0(r.su.length) + ' sem situação' : ''}</small></div>` +
+                `<div class="kc cl" data-k="venc" tabindex="0" title="Clique para ver o detalhe" style="--c:var(--st-crit)"><b>${n0(r.venc.length)}</b><span>Vencidos (abertos)</span><small>${pc(r.venc.length, r.ab.length)} dos abertos · passaram de ${n1(SLA)} h</small></div>` +
+                `<div class="kc cl" data-k="aven" tabindex="0" title="Clique para ver o detalhe" style="--c:var(--st-ok)"><b>${n0(r.aven.length)}</b><span>A vencer (abertos)</span><small>${pc(r.aven.length, r.ab.length)} dos abertos · dentro do prazo</small></div>` +
+                `<div class="kc cl" data-k="fech" tabindex="0" title="Clique para ver o detalhe" style="--c:var(--p2)"><b>${n0(r.fe.length)}</b><span>Fechados</span><small>${n0(r.dentro.length)} no prazo · ${n0(r.fe.length - r.dentro.length)} fora do prazo</small></div>`;
             $('#donut').innerHTML = donut([{ n: 'Vencidos', v: r.venc.length, c: 'var(--st-crit)' }, { n: 'A vencer', v: r.aven.length, c: 'var(--st-ok)' }, { n: 'Fechados', v: r.fe.length, c: 'var(--p2)' }, { n: 'Sem situação', v: r.su.length, c: 'var(--g3)' }], tot);
 
+            const clicavel = (sel, f) => $(sel).querySelectorAll('.cl').forEach(el => { el.onclick = () => f(el); el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); f(el) } } });
+            clicavel('#kpi', el => detKpi(el.dataset.k));
             const pris = PRI.concat([...new Set(r.L.map(t => t.pri))].filter(p => p && !PRI.includes(p)));
             const lin = pris.map(p => { const x = r.L.filter(t => t.pri === p); return { p, t: x.length, v: r.venc.filter(t => t.pri === p).length, a: r.aven.filter(t => t.pri === p).length, f: x.filter(t => t.estado === 'fechado').length } }).filter(l => l.t);
             $('#tprio').innerHTML = lin.length ? `<table class="res"><thead><tr><th>Prioridade</th><th>Total</th><th>Vencidos</th><th>A vencer</th><th>Fechados</th></tr></thead><tbody>` +
-                lin.map(l => `<tr class="clk" data-rep="prio" data-p="${esc(l.p)}" title="Abrir relatório de ${esc(l.p)}"><td><span class="chip" style="--c:${pcol(l.p)}">${esc(l.p)}</span></td><td>${n0(l.t)}</td><td style="color:var(--st-crit);font-weight:800">${n0(l.v)}</td><td style="color:var(--st-ok);font-weight:800">${n0(l.a)}</td><td style="color:var(--p2);font-weight:800">${n0(l.f)}</td></tr>`).join('') +
+                lin.map(l => `<tr class="cl" data-p="${esc(l.p)}" tabindex="0" title="Clique para ver o detalhe de ${esc(l.p)}"><td><span class="chip" style="--c:${pcol(l.p)}">${esc(l.p)}</span></td><td>${n0(l.t)}</td><td style="color:var(--st-crit);font-weight:800">${n0(l.v)}</td><td style="color:var(--st-ok);font-weight:800">${n0(l.a)}</td><td style="color:var(--p2);font-weight:800">${n0(l.f)}</td></tr>`).join('') +
                 `</tbody><tfoot><tr><td>Total</td><td>${n0(tot)}</td><td>${n0(r.venc.length)}</td><td>${n0(r.aven.length)}</td><td>${n0(r.fe.length)}</td></tr></tfoot></table>` : '<div class="vazio">Sem tickets no período.</div>';
 
-            $('#win').innerHTML = r.wins.map(w => `<div class="kc" data-rep="janela" data-p="${w.i}" role="button" tabindex="0" title="Abrir relatório desta janela" style="--c:var(--p2)"><b>${n0(w.lista.length)}</b><span>${w.nome}</span><small>${w.lista.length ? (w.depois ? `${w.hoje} hoje · ${w.depois} depois` : 'vencem hoje') : 'nada vence nesta janela'}</small></div>`).join('');
+            clicavel('#tprio', el => detPri(el.dataset.p));
+            $('#win').innerHTML = r.wins.map(w => `<div class="kc" style="--c:var(--p2)"><b>${n0(w.lista.length)}</b><span>${w.nome}</span><small>${w.lista.length ? (w.depois ? `${w.hoje} hoje · ${w.depois} depois` : 'vencem hoje') : 'nada vence nesta janela'}</small></div>`).join('');
             $('#cols').innerHTML = colunas(r.wins);
             $('#legp').innerHTML = pris.filter(p => r.aven.some(t => t.pri === p)).map(p => `<span><i style="background:${pcol(p)}"></i>${esc(p)}</span>`).join('');
             const prox = r.aven.slice().sort((x, y) => x.due - y.due).slice(0, 25);
             $('#prox').innerHTML = prox.length ? `<table class="res lista"><thead><tr><th>Vence</th><th>Janela</th><th>Sequência</th><th>Prior.</th><th>Grupo</th><th>Localidade</th><th>Falta</th></tr></thead><tbody>` +
                 prox.map(t => { const dd = +dia0(t.due) === +dia0(ref) ? 'hoje' : 'depois', falta = (t.due - ref) / 6e4; return `<tr><td>${hhmm(t.due)} <small class="muted">${dd}</small></td><td>${JAN[Math.floor(t.due.getHours() / 6)]}</td><td>${esc(t.seq)}</td><td><span class="chip" style="--c:${pcol(t.pri)}">${esc(t.pri)}</span></td><td>${esc(t.grupo)}</td><td>${esc(t.loc)}</td><td>${falta >= 60 ? Math.floor(falta / 60) + 'h ' + pad(Math.round(falta % 60)) + 'min' : Math.round(falta) + ' min'}</td></tr>` }).join('') +
-                `</tbody></table>` + (r.aven.length > prox.length ? `<div class="sub" style="margin-top:8px">Mostrando os ${prox.length} primeiros de ${r.aven.length} a vencer. <button type="button" class="rep" data-rep="janelas">Ver todos</button></div>` : '') : '<div class="vazio">Nenhum ticket aberto a vencer.</div>';
+                `</tbody></table>` + (r.aven.length > prox.length ? `<div class="sub" style="margin-top:8px">Mostrando os ${prox.length} primeiros de ${r.aven.length} a vencer.</div>` : '') : '<div class="vazio">Nenhum ticket aberto a vencer.</div>';
 
             $('#tmr').textContent = r.fe.length ? fmtH(r.tmrF) : '—';
             $('#formula').innerHTML = r.fe.length ? `Soma de todas as horas: <b>${n1(r.sF)} h</b> ÷ <b>${n0(r.fe.length)}</b> TAs fechados = <b>${n1(r.tmrF)} h</b> por TA<br>Horas de cada TA = encerramento − criação (data de encerramento vinda da fechamos_historico).` : 'Nenhum ticket fechado no período (não achei a Sequência na fechamos_historico).';
             $('#tmrA').innerHTML = r.ab.length ? `Em aberto: tempo médio decorrido <b>${fmtH(r.tmrA)}</b> (${n1(r.sA)} h ÷ ${n0(r.ab.length)} TAs)` : '';
             const media = (arr, f) => arr.reduce((x, t) => x + f(t), 0) / arr.length;
-            $('#hbprio').innerHTML = barras(lin.map(l => ({ n: l.p, c: pcol(l.p), x: r.fe.filter(t => t.pri === l.p) })).filter(i => i.x.length).map(i => ({ n: i.n, c: i.c, v: media(i.x, t => t.dur), q: i.x.length })), fmtH, 'tmrprio');
-            $('#hbgrp').innerHTML = barras(GRP.concat('Outros').map(n => ({ n, x: r.fe.filter(t => grpOf(t) === n) })).filter(i => i.x.length).map(i => ({ n: i.n, c: gcol[i.n], v: media(i.x, t => t.dur), q: i.x.length })), fmtH, 'tmrgrp');
+            $('#hbprio').innerHTML = barras(lin.map(l => ({ n: l.p, c: pcol(l.p), x: r.fe.filter(t => t.pri === l.p) })).filter(i => i.x.length).map(i => ({ n: i.n, c: i.c, v: media(i.x, t => t.dur), q: i.x.length })), fmtH);
+            const g = t => GRP.includes(t.grupo) ? t.grupo : 'Outros';
+            $('#hbgrp').innerHTML = barras(GRP.concat('Outros').map(n => ({ n, x: r.fe.filter(t => g(t) === n) })).filter(i => i.x.length).map(i => ({ n: i.n, c: gcol[i.n], v: media(i.x, t => t.dur), q: i.x.length })), fmtH);
 
+            clicavel('#hbprio', el => detTmr('pri', el.dataset.n));
+            clicavel('#hbgrp', el => detTmr('grp', el.dataset.n));
             // separação por data de criação (clique para filtrar o dia)
             const dias = [...new Set(todas.map(t => dkey(t.criacao)))].sort().reverse();
             $('#dias').innerHTML = todas.length ? [['', 'Todos os dias']].concat(dias.map(d => [d, dtxt(d)])).map(([k, l]) => `<button type="button" data-d="${k}" aria-pressed="${diaSel === k}">${l}</button>`).join('') : '';
             $('#dias').querySelectorAll('button').forEach(b => b.onclick = () => { diaSel = b.dataset.d; render() });
             $('#pordia').innerHTML = dias.length ? `<table class="res"><thead><tr><th>Criados em</th><th>Total</th><th>Abertos</th><th>Vencidos</th><th>Fechados</th><th>TMR (fechados)</th></tr></thead><tbody>` + dias.map(d => {
                 const x = todas.filter(t => dkey(t.criacao) === d), ab = x.filter(t => t.estado === 'aberto'), fe = x.filter(t => t.estado === 'fechado'), vv = ab.filter(t => (ref - t.criacao) / H > SLA).length;
-                return `<tr class="dia" data-d="${d}"><td>${dtxt(d)}</td><td>${n0(x.length)}</td><td>${n0(ab.length)}</td><td style="color:var(--st-crit);font-weight:800">${n0(vv)}</td><td>${n0(fe.length)}</td><td>${fe.length ? fmtH(media(fe, t => t.dur)) : '—'}</td></tr>`
+                return `<tr class="dia" data-d="${d}" title="Clique para ver o detalhe do dia"><td>${dtxt(d)}</td><td>${n0(x.length)}</td><td>${n0(ab.length)}</td><td style="color:var(--st-crit);font-weight:800">${n0(vv)}</td><td>${n0(fe.length)}</td><td>${fe.length ? fmtH(media(fe, t => t.dur)) : '—'}</td></tr>`
             }).join('') + `</tbody></table>` : '<div class="vazio">Sem dados.</div>';
-            $('#pordia').querySelectorAll('tr.dia').forEach(tr => tr.onclick = () => { diaSel = tr.dataset.d; render(); scrollTo({ top: 0, behavior: 'smooth' }) });
-
-            if (rel && $('#rel').open) montarRel();   // relatório aberto acompanha o recálculo (a cada minuto / nova base)
+            $('#pordia').querySelectorAll('tr.dia').forEach(tr => tr.onclick = () => detDia(tr.dataset.d));
         }
 
-        // ---- relatório completo (modal) ----
-        const sitOf = t => t.estado === 'aberto' ? (t.venc ? 'Vencido' : 'A vencer') : t.estado === 'fechado' ? 'Fechado' : 'Sem situação';
-        const sitCor = { 'Vencido': 'var(--st-crit)', 'A vencer': 'var(--st-ok)', 'Fechado': 'var(--p2)', 'Sem situação': 'var(--mt)' };
-        const tempoOf = t => t.estado === 'aberto' ? t.el : t.estado === 'fechado' ? t.dur : null;   // aberto: decorrido | fechado: encerramento − criação
-        const limOf = t => new Date(+t.criacao + SLA * H);
-        const dt = d => new Date(d).toLocaleString('pt-BR');
-        const colT = (k, h, f) => ({ k, h, val: t => String(f(t) || ''), html: t => esc(f(t)) || '—', csv: t => f(t) || '' });
-        const COLS = [
-            { k: 'seq', h: 'Sequência', val: t => t.seq, html: t => esc(t.seq), csv: t => t.seq },
-            { k: 'raiz', h: 'Raiz', val: t => Number(t.raiz) || 0, html: t => t.raiz ? esc(t.raiz) : '—', csv: t => t.raiz || '' },
-            { k: 'pri', h: 'Prior.', val: t => { const i = PRI.indexOf(t.pri); return i < 0 ? 99 : i }, html: t => `<span class="chip" style="--c:${pcol(t.pri)}">${esc(t.pri)}</span>`, csv: t => t.pri },
-            colT('grupo', 'Grupo', t => t.grupo), colT('loc', 'Localidade', t => t.loc), colT('uf', 'UF', t => t.uf), colT('site', 'Site', t => t.site), colT('gestor', 'Gestor atual', t => t.gestor),
-            { k: 'cri', h: 'Criação', val: t => +t.criacao, html: t => quando(t.criacao), csv: t => dt(t.criacao) },
-            { k: 'lim', h: 'Prazo limite', val: t => +limOf(t), html: t => quando(limOf(t)), csv: t => dt(limOf(t)) },
-            { k: 'enc', h: 'Encerramento', val: t => t.enc ? +t.enc : 0, html: t => t.enc ? quando(t.enc) : '—', csv: t => t.enc ? dt(t.enc) : '' },
-            { k: 'tempo', h: 'Tempo', ch: 'Tempo (h)', val: t => { const h = tempoOf(t); return h == null ? -1 : h }, html: t => { const h = tempoOf(t); return h == null ? '—' : fmtH(h) }, csv: t => { const h = tempoOf(t); return h == null ? '' : n1(h) } },
-            { k: 'sit', h: 'Situação', val: t => sitOf(t), html: t => `<b style="color:${sitCor[sitOf(t)]}">${sitOf(t)}</b>`, csv: t => sitOf(t) },
-            { k: 'jan', h: 'Vence na janela', val: t => t.due ? t.due.getHours() * 60 + t.due.getMinutes() : -1, html: t => t.due ? JAN[Math.floor(t.due.getHours() / 6)] : '—', csv: t => t.due ? JAN[Math.floor(t.due.getHours() / 6)] : '' }
-        ];
-        // o que cada relatório mostra: t = título | l = tickets | sk = ordenação inicial [coluna, 1 crescente / -1 decrescente] | jan = mostra a coluna da janela
-        function relDef(tipo, p) {
-            const r = ult;
-            switch (tipo) {
-                case 'venc': return { t: 'Vencidos (abertos)', l: r.venc, sk: ['tempo', -1] };
-                case 'aven': return { t: 'A vencer (abertos)', l: r.aven, sk: ['lim', 1], jan: true };
-                case 'fech': return { t: 'Fechados', l: r.fe, sk: ['tempo', -1] };
-                case 'prio': return { t: p ? 'Prioridade ' + p : 'Por prioridade', l: p ? r.L.filter(t => t.pri === p) : r.L, sk: ['pri', 1] };
-                case 'janelas': return { t: 'Tudo que vai vencer · janelas de 6 horas', l: r.aven, sk: ['lim', 1], jan: true };
-                case 'janela': return { t: 'A vencer · janela ' + JAN[Number(p)], l: r.wins[Number(p)].lista, sk: ['lim', 1], jan: true };
-                case 'tmr': return { t: 'TMR · tempo médio de reparo (fechados)', l: r.fe, sk: ['tempo', -1] };
-                case 'tmrprio': return { t: p ? 'TMR · prioridade ' + p + ' (fechados)' : 'TMR por prioridade (fechados)', l: p ? r.fe.filter(t => t.pri === p) : r.fe, sk: p ? ['tempo', -1] : ['pri', 1] };
-                case 'tmrgrp': return { t: p ? 'TMR · grupo ' + p + ' (fechados)' : 'TMR por grupo (fechados)', l: p ? r.fe.filter(t => grpOf(t) === p) : r.fe, sk: p ? ['tempo', -1] : ['grupo', 1] };
-                default: return { t: 'Quantos temos, vencidos e a vencer', l: r.L, sk: ['pri', 1] };
-            }
+        // ---- modais de detalhe ----
+        const SIT_COR = { 'Vencido': 'var(--st-crit)', 'A vencer': 'var(--st-ok)', 'Fechado': 'var(--p2)', 'Sem situação': 'var(--g3)' };
+        const sitDe = t => t.estado === 'fechado' ? 'Fechado' : t.estado === 'sumiu' ? 'Sem situação' : t.venc ? 'Vencido' : 'A vencer';
+        const dh = ms => { const m = Math.round(Math.abs(ms) / 6e4); return m >= 60 ? Math.floor(m / 60) + 'h ' + pad(m % 60) + 'min' : m + ' min' };
+        const tempoTk = t => t.estado === 'fechado' ? fmtH(t.dur) : t.estado === 'sumiu' ? '—' : fmtH(t.el);
+        const detalheTk = (t, ref) => t.estado === 'fechado' ? `encerrado ${quando(t.enc)} · ${t.dur <= SLA ? 'dentro' : 'fora'} do prazo` : t.estado === 'sumiu' ? 'não está na base atual nem na fechamos_historico' : t.venc ? `venceu ${quando(t.due)} (há ${dh(ref - t.due)})` : `vence ${quando(t.due)} (falta ${dh(t.due - ref)})`;
+        const pl = (n, s, p) => n0(n) + ' ' + (n === 1 ? s : p);   // 1 ticket / 2 tickets
+        const pcn = (a, b) => b ? (a / b * 100).toFixed(0) + '%' : '0%';
+        const sobre = arr => { const o = arr.slice().sort((x, y) => x - y), n = o.length, s = o.reduce((x, y) => x + y, 0); return { n, s, m: n ? s / n : 0, min: o[0] || 0, max: o[n - 1] || 0, med: n ? (n % 2 ? o[(n - 1) / 2] : (o[n / 2 - 1] + o[n / 2]) / 2) : 0 } };
+        const origem = () => `<p><b>De onde vêm os números:</b> ${esc(info || 'bases do período')}${diaSel ? ', só tickets criados em ' + dtxt(diaSel) : ''}. Cada Sequência conta uma vez, com os dados da base mais recente em que apareceu. Prazo (SLA) usado: <b>${n1(SLA)} h</b>, que você pode mudar no topo da página.</p>`;
+        let dlista = [], dtab = 'Todos';
+        function abrirDet(d) {
+            $('#dtit').textContent = d.tit; $('#dsub').textContent = d.sub || ''; $('#dexp').innerHTML = d.exp;
+            $('#dkpi').innerHTML = (d.kpis || []).map(k => `<div style="--c:${k.c || 'var(--tx)'}"><b>${k.n}</b><span>${k.l}</span></div>`).join('');
+            dlista = d.lista; dtab = 'Todos';
+            $('#dact').innerHTML = d.acao ? `<button type="button" id="dacao">${d.acao.txt}</button>` : '';
+            if (d.acao) $('#dacao').onclick = () => { d.acao.fn(); $('#det').close() };
+            pintarDet(); $('#det').showModal(); $('#det').scrollTop = 0;
         }
-        function chips(ls) {
-            const ab = ls.filter(t => t.estado === 'aberto'), fe = ls.filter(t => t.estado === 'fechado'), su = ls.filter(t => t.estado === 'sumiu').length;
-            const venc = ab.filter(t => t.venc).length, c = [[ls.length, 'tickets', 'var(--tx)']];
-            if (ab.length) c.push([venc, 'vencidos', 'var(--st-crit)'], [ab.length - venc, 'a vencer', 'var(--st-ok)']);
-            if (fe.length) c.push([fe.length, 'fechados', 'var(--p2)'], [fmtH(fe.reduce((x, t) => x + t.dur, 0) / fe.length), 'TMR dos fechados', 'var(--p2)']);
-            if (ab.length) c.push([fmtH(ab.reduce((x, t) => x + t.el, 0) / ab.length), 'tempo médio em aberto', 'var(--mt)']);
-            if (su) c.push([su, 'sem situação', 'var(--g3)']);
-            PRI.concat([...new Set(ls.map(t => t.pri))].filter(p => p && !PRI.includes(p))).forEach(p => { const n = ls.filter(t => t.pri === p).length; if (n) c.push([n, p, pcol(p)]) });
-            return c;
+        function pintarDet() {
+            const ref = ult.ref, sits = ['Vencido', 'A vencer', 'Fechado', 'Sem situação'], cont = s => dlista.filter(t => sitDe(t) === s).length, usadas = sits.filter(cont);
+            $('#dtabs').innerHTML = usadas.length > 1 ? ['Todos'].concat(usadas).map(s => `<button type="button" data-s="${s}" aria-pressed="${dtab === s}">${s} (${s === 'Todos' ? dlista.length : cont(s)})</button>`).join('') : '';
+            $('#dtabs').querySelectorAll('button').forEach(b => b.onclick = () => { dtab = b.dataset.s; pintarDet() });
+            const ordem = { 'Vencido': 0, 'A vencer': 1, 'Fechado': 2, 'Sem situação': 3 };
+            const L = dlista.filter(t => dtab === 'Todos' || sitDe(t) === dtab).slice().sort((x, y) => ordem[sitDe(x)] - ordem[sitDe(y)] || (sitDe(x) === 'A vencer' ? x.due - y.due : sitDe(x) === 'Fechado' ? y.dur - x.dur : sitDe(x) === 'Vencido' ? y.el - x.el : x.criacao - y.criacao));
+            $('#dlista').innerHTML = L.length ? `<table class="res lista"><thead><tr><th>Sequência</th><th>Prior.</th><th>Grupo</th><th>Localidade</th><th>Site</th><th>Criado em</th><th>Situação</th><th>Tempo</th><th>Detalhe</th></tr></thead><tbody>` +
+                L.slice(0, 300).map(t => `<tr><td>${esc(t.seq)}</td><td><span class="chip" style="--c:${pcol(t.pri)}">${esc(t.pri)}</span></td><td>${esc(t.grupo)}</td><td>${esc(t.loc)}</td><td>${esc(t.site)}</td><td>${quando(t.criacao)}</td><td><span class="chip" style="--c:${SIT_COR[sitDe(t)]}">${sitDe(t)}</span></td><td>${tempoTk(t)}</td><td>${detalheTk(t, ref)}</td></tr>`).join('') + `</tbody></table>` + (L.length > 300 ? `<div class="sub" style="padding:8px">Mostrando 300 de ${L.length}.</div>` : '') : '<div class="vazio">Nenhum ticket.</div>';
         }
-        function montarRel(reset) {
-            if (!rel || !ult) return;
-            const d = relDef(rel.tipo, rel.p), cols = COLS.filter(c => c.k !== 'jan' || d.jan);
-            if (!rel.sk) { rel.sk = d.sk[0]; rel.sd = d.sk[1] }
-            let ls = d.l.slice();
-            const q = rel.q.trim().toLowerCase();
-            if (q) ls = ls.filter(t => [t.seq, t.raiz, t.pri, t.grupo, t.loc, t.uf, t.site, t.gestor, sitOf(t)].join(' ').toLowerCase().includes(q));
-            const col = cols.find(c => c.k === rel.sk) || cols[0];
-            ls.sort((a, b) => { const x = col.val(a), y = col.val(b), s = typeof x === 'string' ? x.localeCompare(y, 'pt-BR') : x - y; return (s * rel.sd) || (a.criacao - b.criacao) });
-            rel.cols = cols; rel.ls = ls;
-            const MAX = 3000, vis = ls.slice(0, MAX);
-            $('#relTit').textContent = d.t;
-            $('#relSub').textContent = `${info || 'bases carregadas'}${diaSel ? ' · criados em ' + dtxt(diaSel) : ''} · prazo de ${n1(SLA)} h · calculado às ${hhmm(new Date())}`;
-            $('#relSum').innerHTML = chips(ls).map(([v, l, c]) => `<span class="rc" style="--c:${c}"><b>${typeof v === 'number' ? n0(v) : v}</b>${esc(l)}</span>`).join('');
-            $('#relNota').textContent = `${n0(ls.length)} ticket(s)${ls.length > MAX ? ' · mostrando os primeiros ' + n0(MAX) + ' (use Exportar CSV para ver todos)' : ''} · Tempo = decorrido desde a criação (abertos) ou encerramento − criação (fechados) · clique no título da coluna para ordenar`;
-            const sc = reset ? 0 : $('#relTw').scrollTop;
-            $('#relTw').innerHTML = ls.length ? `<table class="res lista"><thead><tr>${cols.map(c => `<th data-k="${c.k}" title="Ordenar">${c.h}${c.k === col.k ? (rel.sd > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${vis.map(t => `<tr>${cols.map(c => `<td>${c.html(t)}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '<div class="vazio">Nenhum ticket neste relatório.</div>';
-            $('#relTw').scrollTop = sc;
+        function detKpi(k) {
+            const { r, ref } = ult, ab = r.ab.length, tot = r.L.length;
+            const kp = [{ n: n0(tot), l: 'Total' }, { n: n0(ab), l: 'Abertos' }, { n: n0(r.venc.length), l: 'Vencidos', c: 'var(--st-crit)' }, { n: n0(r.aven.length), l: 'A vencer', c: 'var(--st-ok)' }, { n: n0(r.fe.length), l: 'Fechados', c: 'var(--p2)' }, { n: n0(r.su.length), l: 'Sem situação', c: 'var(--g3)' }];
+            if (k === 'tot') abrirDet({ tit: 'Temos · tickets únicos', sub: pl(tot, 'ticket', 'tickets'), kpis: kp, lista: r.L, exp: origem() + `<p><b>O que é:</b> todos os tickets encontrados no período. Eles se dividem em três situações: <b>${n0(ab)} abertos</b> (estão na base mais recente e não constam como fechados), <b>${n0(r.fe.length)} fechados</b> (a Sequência foi achada na tabela fechamos_historico, de onde vem a data de encerramento) e <b>${n0(r.su.length)} sem situação</b> (sumiram da base mais recente e também não estão na fechamos_historico: provavelmente foram resolvidos sem registro de fechamento).</p><p>Use as abas abaixo para ver cada grupo.</p>` });
+            else if (k === 'venc') { const e = sobre(r.venc.map(t => t.el)); abrirDet({ tit: 'Vencidos · abertos fora do prazo', sub: `${n0(r.venc.length)} de ${n0(ab)} abertos (${pcn(r.venc.length, ab)})`, kpis: [{ n: n0(r.venc.length), l: 'Vencidos', c: 'var(--st-crit)' }, { n: fmtH(e.m), l: 'Espera média' }, { n: fmtH(e.max), l: 'Mais antigo' }, { n: fmtH(e.med), l: 'Mediana' }], lista: r.venc, exp: origem() + `<p><b>Como conta:</b> ticket <b>aberto</b> cujo tempo desde a criação passou de ${n1(SLA)} h. Tempo = agora (${hhmm(new Date(ref))}) − data de criação. Vencido é o que já estourou o prazo e continua sem fechamento.</p>` + (r.venc.length ? `<p>Dos ${pl(ab, 'aberto', 'abertos')}, <b>${n0(r.venc.length)}</b> já ${r.venc.length === 1 ? 'venceu' : 'venceram'}. O mais antigo está aberto há <b>${fmtH(e.max)}</b>, e a espera média dos vencidos é <b>${fmtH(e.m)}</b>.</p>` : '<p>Nenhum ticket aberto passou do prazo.</p>') }) }
+            else if (k === 'aven') { const px = r.aven.slice().sort((x, y) => x.due - y.due)[0]; abrirDet({ tit: 'A vencer · abertos dentro do prazo', sub: `${n0(r.aven.length)} de ${n0(ab)} abertos (${pcn(r.aven.length, ab)})`, kpis: [{ n: n0(r.aven.length), l: 'A vencer', c: 'var(--st-ok)' }, { n: px ? hhmm(px.due) : '—', l: 'Próximo vencimento' }, { n: px ? dh(px.due - ref) : '—', l: 'Falta para o próximo' }], lista: r.aven, exp: origem() + `<p><b>Como conta:</b> ticket <b>aberto</b> que ainda não passou de ${n1(SLA)} h desde a criação. O vencimento de cada um é <b>data de criação + ${n1(SLA)} h</b>; a coluna Detalhe mostra a hora e quanto falta.</p>` + (px ? `<p>O próximo a vencer é o <b>${esc(px.seq)}</b> (${esc(px.pri)}), às <b>${hhmm(px.due)}</b>, em ${dh(px.due - ref)}. Os vencimentos estão separados por janelas de 6 horas na seção abaixo.</p>` : '<p>Não há tickets abertos dentro do prazo.</p>') }) }
+            else { const e = sobre(r.fe.map(t => t.dur)); abrirDet({ tit: 'Fechados · com data de encerramento', sub: pl(r.fe.length, 'ticket', 'tickets'), kpis: [{ n: n0(r.fe.length), l: 'Fechados', c: 'var(--p2)' }, { n: n0(r.dentro.length), l: 'No prazo', c: 'var(--st-ok)' }, { n: n0(r.fe.length - r.dentro.length), l: 'Fora do prazo', c: 'var(--st-crit)' }, { n: r.fe.length ? fmtH(e.m) : '—', l: 'TMR' }], lista: r.fe, exp: origem() + `<p><b>Como conta:</b> ticket cuja Sequência foi encontrada na tabela <b>fechamos_historico</b>; a data de encerramento vem de lá. <b>Duração = encerramento − criação.</b> Dentro do prazo = fechou em até ${n1(SLA)} h; fora do prazo = demorou mais que isso.</p>` + (r.fe.length ? `<p>${n0(r.dentro.length)} de ${n0(r.fe.length)} (${pcn(r.dentro.length, r.fe.length)}) fecharam no prazo. O TMR destes tickets é <b>${fmtH(e.m)}</b>.</p>` : '<p>Nenhum ticket fechado foi encontrado no período.</p>') }) }
         }
-        function abrirRel(tipo, p) {
-            if (!ult) return;
-            rel = { tipo, p, q: '', sk: null, sd: 1 }; $('#relQ').value = '';
-            montarRel(true); if (!$('#rel').open) $('#rel').showModal();
+        function detPri(p) {
+            const { r } = ult, L = r.L.filter(t => t.pri === p), v = L.filter(t => t.estado === 'aberto' && t.venc).length, a = L.filter(t => t.estado === 'aberto' && !t.venc).length, f = L.filter(t => t.estado === 'fechado').length, s = L.filter(t => t.estado === 'sumiu').length;
+            abrirDet({
+                tit: 'Prioridade ' + p, sub: `${pl(L.length, 'ticket', 'tickets')} · ${pcn(L.length, r.L.length)} do total`, lista: L,
+                kpis: [{ n: n0(L.length), l: 'Total ' + p, c: pcol(p) }, { n: n0(v), l: 'Vencidos', c: 'var(--st-crit)' }, { n: n0(a), l: 'A vencer', c: 'var(--st-ok)' }, { n: n0(f), l: 'Fechados', c: 'var(--p2)' }, { n: n0(s), l: 'Sem situação', c: 'var(--g3)' }],
+                exp: origem() + `<p><b>Leitura:</b> a prioridade <b>${esc(p)}</b> tem <b>${n0(L.length)}</b> tickets (${pcn(L.length, r.L.length)} dos ${n0(r.L.length)} do período). Desses, <b>${n0(v)}</b> estão abertos e vencidos, <b>${n0(a)}</b> abertos dentro do prazo, <b>${n0(f)}</b> já fechados e <b>${n0(s)}</b> sem situação.</p><p>Entre os ${pl(v + a, 'aberto', 'abertos')} de ${esc(p)}, ${pcn(v, v + a)} ${v + a === 1 && v === 1 ? 'está vencido' : 'estão vencidos'}.</p>`
+            });
         }
-        function exportarCsv() {
-            if (!rel || !rel.ls) return;
-            const lin = [rel.cols.map(c => c.ch || c.h)].concat(rel.ls.map(t => rel.cols.map(c => c.csv(t))));
-            const csv = lin.map(l => l.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(';')).join('\r\n');
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
-            a.download = 'grdd-relatorio-' + dkey(new Date()) + '.csv';
-            document.body.appendChild(a); a.click(); a.remove();
-            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        function detTmr(tipo, nome) {
+            const { r } = ult, g = t => GRP.includes(t.grupo) ? t.grupo : 'Outros';
+            const L = r.fe.filter(t => tipo === 'pri' ? t.pri === nome : g(t) === nome), e = sobre(L.map(t => t.dur)), geral = r.fe.length ? r.sF / r.fe.length : 0, ab = r.ab.filter(t => tipo === 'pri' ? t.pri === nome : g(t) === nome);
+            const fora = L.filter(t => t.dur > SLA).length, dif = e.m - geral;
+            const outros = tipo === 'grp' && nome === 'Outros' ? `<p><b>"Outros"</b> reúne os grupos diferentes de PI, RE e SWAP: ${esc([...new Set(L.map(t => t.grupo || '(sem grupo)'))].join(', ') || '—')}.</p>` : '';
+            abrirDet({
+                tit: 'TMR · ' + (tipo === 'pri' ? 'prioridade ' : 'grupo ') + nome, sub: pl(e.n, 'ticket fechado', 'tickets fechados'), lista: L,
+                kpis: [{ n: fmtH(e.m), l: 'TMR', c: 'var(--p2)' }, { n: n0(e.n), l: 'TAs fechados' }, { n: fmtH(e.med), l: 'Mediana' }, { n: fmtH(e.min), l: 'Mais rápido', c: 'var(--st-ok)' }, { n: fmtH(e.max), l: 'Mais lento', c: 'var(--st-crit)' }, { n: n0(fora), l: 'Fora do prazo (> ' + n1(SLA) + ' h)' }],
+                exp: origem() + outros + `<p><b>Fórmula do TMR (tempo médio de reparo):</b> soma das horas de todos os TAs fechados ÷ quantidade de TAs. A hora de cada TA = <b>encerramento − criação</b>, com a data de encerramento vinda da fechamos_historico.</p><p><b>Conta de ${esc(nome)}:</b> ${n1(e.s)} h ÷ ${pl(e.n, 'TA', 'TAs')} = <b>${n1(e.m)} h</b> por TA (${fmtH(e.m)}).</p><p>O TMR geral do período é ${fmtH(geral)}; ${esc(nome)} está <b>${Math.abs(dif) < 0.005 ? 'igual a ele' : fmtH(Math.abs(dif)) + (dif > 0 ? ' acima' : ' abaixo')}</b>. A mediana (${fmtH(e.med)}) é o valor do meio e ajuda a ver se poucos casos muito demorados puxam a média.</p>` + (ab.length ? `<p>Em aberto ${tipo === 'pri' ? 'nesta prioridade' : 'neste grupo'}: ${pl(ab.length, 'ticket', 'tickets')}, com ${fmtH(ab.reduce((x, t) => x + t.el, 0) / ab.length)} de espera média. Eles não entram no TMR porque ainda não foram encerrados.</p>` : '')
+            });
         }
-        document.addEventListener('click', e => { const el = e.target.closest('[data-rep]'); if (el) abrirRel(el.dataset.rep, el.dataset.p) });
-        document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-rep][role=button]')) { e.preventDefault(); e.target.click() } });
-        $('#relX').onclick = () => $('#rel').close();
-        $('#rel').addEventListener('click', e => { if (e.target === $('#rel')) $('#rel').close() });
-        $('#rel').addEventListener('close', () => { rel = null });
-        $('#relQ').oninput = e => { if (rel) { rel.q = e.target.value; montarRel() } };
-        $('#relTw').addEventListener('click', e => { const th = e.target.closest('th[data-k]'); if (!th || !rel) return; if (rel.sk === th.dataset.k) rel.sd *= -1; else { rel.sk = th.dataset.k; rel.sd = 1 } montarRel() });
-        $('#relCsv').onclick = exportarCsv;
+        function detDia(d) {
+            const { r, ref } = ult, L = todas.filter(t => dkey(t.criacao) === d).map(t => enriquecer(t, ref)), fe = L.filter(t => t.estado === 'fechado'), ab = L.filter(t => t.estado === 'aberto'), v = ab.filter(t => t.venc).length, su = L.length - fe.length - ab.length, e = sobre(fe.map(t => t.dur));
+            abrirDet({
+                tit: 'Criados em ' + dtxt(d), sub: pl(L.length, 'ticket', 'tickets'), lista: L,
+                kpis: [{ n: n0(L.length), l: 'Criados no dia' }, { n: n0(ab.length), l: 'Abertos' }, { n: n0(v), l: 'Vencidos', c: 'var(--st-crit)' }, { n: n0(fe.length), l: 'Fechados', c: 'var(--p2)' }, { n: n0(su), l: 'Sem situação', c: 'var(--g3)' }, { n: fe.length ? fmtH(e.m) : '—', l: 'TMR dos fechados' }],
+                exp: origem().replace(/, só tickets criados em \d\d\/\d\d/, '') + `<p><b>Leitura:</b> em <b>${dtxt(d)}</b> foram criados <b>${pl(L.length, 'ticket', 'tickets')}</b> (de todas as bases do período). Hoje, <b>${n0(ab.length)}</b> deles seguem abertos (${n0(v)} vencidos), <b>${n0(fe.length)}</b> foram fechados e <b>${n0(su)}</b> ${su === 1 ? 'não tem' : 'não têm'} situação.</p>` + (fe.length ? `<p>O TMR dos fechados deste dia é <b>${n1(e.s)} h ÷ ${pl(e.n, 'TA', 'TAs')} = ${fmtH(e.m)}</b>.</p>` : ''),
+                acao: { txt: 'Filtrar a página só por este dia', fn: () => { diaSel = d; render(); scrollTo({ top: 0, behavior: 'smooth' }) } }
+            });
+        }
 
         // ---- controles ----
         $('#sla').value = String(SLA);
@@ -873,6 +831,8 @@
         $('#de').value = dkey(new Date(Date.now() - 6 * 864e5)); $('#ate').value = dkey(new Date());   // padrão: últimos 7 dias
         $('#de').onchange = $('#ate').onchange = carregar;
         $('#reload').onclick = carregar;
+        $('#dfecha').onclick = () => $('#det').close();
+        $('#det').onclick = e => { if (e.target === $('#det')) $('#det').close() };   // clicar fora fecha
         const tema = store.get('tema'); if (tema) document.documentElement.dataset.theme = tema;
         $('#theme').onclick = () => { const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; store.set('tema', r.dataset.theme) };
         setInterval(() => todas.length && render(), 60000);     // o tempo passa: recalcula a cada minuto

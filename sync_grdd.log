@@ -1,0 +1,203 @@
+2026-10-28 13:07:21,097 ERROR Falha: Defina PBI_REPORT_URL
+Traceback (most recent call last):
+  File "c:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 212, in main
+    baixar()
+    ~~~~~~^^
+  File "c:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 60, in baixar
+    raise RuntimeError("Defina PBI_REPORT_URL")
+RuntimeError: Defina PBI_REPORT_URL
+2026-10-28 13:09:23,774 ERROR Falha: BrowserType.launch_persistent_context: Executable doesn't exist at C:\Users\A0072801\AppData\Local\ms-playwright\chromium-1234\chrome-win64\chrome.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+Traceback (most recent call last):
+  File "C:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 212, in main
+    baixar()
+    ~~~~~~^^
+  File "C:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 63, in baixar
+    ctx = p.chromium.launch_persistent_context(PERFIL, headless=False, accept_downloads=True)
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\sync_api\_generated.py", line 17003, in launch_persistent_context
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.launch_persistent_context(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<51 lines>...
+        )
+        ^
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_browser_type.py", line 165, in launch_persistent_context
+    result = await self._channel.send_return_as_dict(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "launchPersistentContext", TimeoutSettings.launch_timeout, params
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_connection.py", line 103, in send_return_as_dict
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.launch_persistent_context: Executable doesn't exist at C:\Users\A0072801\AppData\Local\ms-playwright\chromium-1234\chrome-win64\chrome.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-10-28 13:10:37,933 ERROR Falha: BrowserType.launch_persistent_context: Executable doesn't exist at C:\Users\A0072801\AppData\Local\ms-playwright\chromium-1234\chrome-win64\chrome.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+Traceback (most recent call last):
+  File "C:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 212, in main
+    baixar()
+    ~~~~~~^^
+  File "C:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 63, in baixar
+    ctx = p.chromium.launch_persistent_context(PERFIL, headless=False, accept_downloads=True)
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\sync_api\_generated.py", line 17003, in launch_persistent_context
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.launch_persistent_context(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<51 lines>...
+        )
+        ^
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_browser_type.py", line 165, in launch_persistent_context
+    result = await self._channel.send_return_as_dict(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "launchPersistentContext", TimeoutSettings.launch_timeout, params
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_connection.py", line 103, in send_return_as_dict
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.launch_persistent_context: Executable doesn't exist at C:\Users\A0072801\AppData\Local\ms-playwright\chromium-1234\chrome-win64\chrome.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-10-28 13:19:16,075 ERROR Falha: Locator.wait_for: Timeout 60000ms exceeded.
+Call log:
+  - waiting for locator("visual-container").first to be visible
+    - waiting for "https://login.microsoftonline.com/9744600e-3e04-492e-baa1-25ec245c6f10/oauth2/authorize?client_id=871c010f-5e61-4fb1-83ac-98610a7e9110&response_type=code%20id_token&scope=openid%20profile%20offline_a…" navigation to finish...
+    - navigated to "https://login.microsoftonline.com/9744600e-3e04-492e-baa1-25ec245c6f10/oauth2/authorize?client_id=871c010f-5e61-4fb1-83ac-98610a7e9110&response_type=code%20id_token&scope=openid%20profile%20offline_a…"
+    - waiting for "https://login.microsoftonline.com/9744600e-3e04-492e-baa1-25ec245c6f10/login" navigation to finish...
+    - navigated to "https://login.microsoftonline.com/9744600e-3e04-492e-baa1-25ec245c6f10/login"
+Traceback (most recent call last):
+  File "C:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 212, in main
+    baixar()
+    ~~~~~~^^
+  File "C:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 80, in baixar
+    visual.wait_for(timeout=60_000)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\sync_api\_generated.py", line 20539, in wait_for
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.wait_for(timeout=to_milliseconds(timeout), state=state)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_locator.py", line 748, in wait_for
+    await self._frame.wait_for_selector(
+        self._selector, strict=True, timeout=timeout, state=state
+    )
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_frame.py", line 394, in wait_for_selector
+    await self._channel.send(
+        "waitForSelector", self._timeout, locals_to_params(locals())
+    )
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 60000ms exceeded.
+Call log:
+  - waiting for locator("visual-container").first to be visible
+    - waiting for "https://login.microsoftonline.com/9744600e-3e04-492e-baa1-25ec245c6f10/oauth2/authorize?client_id=871c010f-5e61-4fb1-83ac-98610a7e9110&response_type=code%20id_token&scope=openid%20profile%20offline_a…" navigation to finish...
+    - navigated to "https://login.microsoftonline.com/9744600e-3e04-492e-baa1-25ec245c6f10/oauth2/authorize?client_id=871c010f-5e61-4fb1-83ac-98610a7e9110&response_type=code%20id_token&scope=openid%20profile%20offline_a…"
+    - waiting for "https://login.microsoftonline.com/9744600e-3e04-492e-baa1-25ec245c6f10/login" navigation to finish...
+    - navigated to "https://login.microsoftonline.com/9744600e-3e04-492e-baa1-25ec245c6f10/login"
+
+2026-10-28 13:21:07,100 ERROR Falha: Locator.wait_for: Timeout 60000ms exceeded.
+Call log:
+  - waiting for locator("visual-container").first to be visible
+Traceback (most recent call last):
+  File "C:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 212, in main
+    baixar()
+    ~~~~~~^^
+  File "C:\Users\A0072801\OneDrive - Telefonica\Documents\cadastro\Projetos\GAV\sync_grdd.py", line 80, in baixar
+    visual.wait_for(timeout=60_000)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\sync_api\_generated.py", line 20539, in wait_for
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.wait_for(timeout=to_milliseconds(timeout), state=state)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_locator.py", line 748, in wait_for
+    await self._frame.wait_for_selector(
+        self._selector, strict=True, timeout=timeout, state=state
+    )
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_frame.py", line 394, in wait_for_selector
+    await self._channel.send(
+        "waitForSelector", self._timeout, locals_to_params(locals())
+    )
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\A0072801\AppData\Roaming\Python\Python313\site-packages\playwright\_impl\_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 60000ms exceeded.
+Call log:
+  - waiting for locator("visual-container").first to be visible
+
+2026-10-28 13:23:49,330 ERROR A sessão expirou: rode com --login
+2026-10-28 13:24:59,043 ERROR A sessão expirou: rode com --login
+2026-10-28 13:26:24,225 ERROR A sessão expirou: rode com --login
